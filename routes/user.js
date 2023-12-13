@@ -41,12 +41,34 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/logout',(req,res)=>{
-
+    req.logout();
+    res.redirect('/');
 })
 
 router.get('/currentuser',(req,res)=>{
     const currentuser = req.user;
     res.json({currentuser});
 })
+
+router.get('/register', (req, res) => {
+    res.render('register');
+})
+
+router.post('/register', (req, res) => {
+    const {name,email,user,password} = req.body;
+    try {
+        const validate = User.findOne({email});
+        if(validate.length > 0){
+            res.send("email ya registrado");
+        }else{
+            const newUser = new User({name,email,user,password});
+            newUser.save();
+            req.logIn({user,password},done,err);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 
 export default router;

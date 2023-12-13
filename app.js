@@ -1,7 +1,6 @@
 import express from 'express';
 const app = express();
 import session from 'express-session';
-import User from './models/users.js'
 import userRoutes from './routes/user.js';
 import passport from 'passport';
 
