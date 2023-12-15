@@ -2,6 +2,7 @@ import express from 'express';
 const app = express();
 import session from 'express-session';
 import userRoutes from './routes/user.js';
+import productRoutes from './routes/product.js';
 import passport from 'passport';
 
 
@@ -12,6 +13,7 @@ app.use(session({
 }));
 
 app.use('/user', userRoutes);
+app.use('/product', productRoutes);
 
 
 
@@ -20,5 +22,5 @@ app.use(passport.session());
 
 
 app.listen('3000',()=>{
-    console.log("servidor listo, 3000");
+    console.log("servidor listo, puerto: 3000");
 })
