@@ -7,9 +7,10 @@ const ProductsSchema= new mongoose.Schema({
     images: [{url: String}],
     description:String,
     category:{
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         ref:category,
     },
+    amount:Number,
 });
 
 export default mongoose.model("Products", ProductsSchema);

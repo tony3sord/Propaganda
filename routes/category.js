@@ -24,8 +24,8 @@ router.get("/category",async (req,res)=>{
 })
 
 //show the view edit a category with the category to edit
-router.get('/editcategory/:id', (req, res) => {
-    const category = Category.findById(req.params.id);
+router.get('/editcategory/:id', async (req, res) => {
+    const category = await Category.findById(req.params.id);
     // if(req.isAuthenticated()){
     //     if(req.user.role=="admin"){
     //         res.render('editcategory', {category});

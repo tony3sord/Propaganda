@@ -12,9 +12,9 @@ get : "/logout" => desloguea al usuario
 get: "/products" => devuelve todos los productos 
 get: "/addproduct" => renderiza la vista "addproduct" la cual es para insertar un producto
 post: "/addproduct" => hace la funcion "addproduct" la cual es para insertar un producto con los campos (name,price,description,image,
-category,) image es un arreglo que puedes poner hasta 3 imagenes, solo hay que hacer required una sola, las demás no son obligatorias
+category,amount) image es un arreglo que puedes poner hasta 3 imagenes, solo hay que hacer required una sola, las demás no son obligatorias
 get: "/editproduct/:id" => renderiza la vista de editar producto el cual tambien envia en json el producto a editar(el cual debe de ser enviado por parametro, solo el id)
-post: "/editproduct/:id" => edita el producto el cual debe de ser enviado por parametro(solo el id)
+post: "/editproduct/:id" => edita el producto el cual debe de ser enviado por parametro(id)
 delete: "/removeproduct/:id" => elimina el producto, del cual envias por parametro su id
 
 *Categorias:
@@ -25,3 +25,9 @@ get: "/editcategory/:id" => renderiza la vista editcategory y envia un json de l
 delete: "/removecategory/:id" => elimina la categoria enviada por parametro
 post: "/editcategory/:id" => edita la categoria 
 post: "/addcategory" => añade una categoría (name) 
+
+*Cestas:
+get: "/basket/:id" => devuelve la cesta del usuario actual
+get: "/addproductstobasket" => añade un producto a la cesta 
+delete: "/removeproductstobasket/:id" => borra de la cesta el producto enviado por parametro (id)
+delete: "/removebasket/:id => borra la cesta enviada por paramtero (id)

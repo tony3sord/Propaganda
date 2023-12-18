@@ -18,8 +18,8 @@ router.get('/addproduct', (req, res) => {
 })    
 
 //add a product
-router.post('/addproduct', (req, res) => {
-    const {name,price,description,image,category} = req.body;
+router.post('/addproduct',async (req, res) => {
+    const {name,price,description,image,category,amount} = req.body;
     try {
         const newProduct = new Products({
             name,
@@ -27,8 +27,9 @@ router.post('/addproduct', (req, res) => {
             description,
             image,
             category,
+            amount
         });
-        newProduct.save();
+        await newProduct.save();
     } catch (error) {
         console.log(error);
     }
@@ -36,7 +37,7 @@ router.post('/addproduct', (req, res) => {
 })
 
 //show the view edit a product
-router.get('/editproduct/:id', (req, res) => {
+router.get('/editproduct/:id', async (req, res) => {
     const id = req.params.id;
     // if(req.isAuthenticated()){
     //     if(req.user.role=="admin"){
@@ -54,7 +55,7 @@ router.get('/editproduct/:id', (req, res) => {
     // }else{
     //     res.redirect('/login');
     // }    
-    Products.findById(id, (err, doc) => {
+    await Products.findById(id, (err, doc) => {
         if(err){
             console.log(err);
         }else{
@@ -64,16 +65,17 @@ router.get('/editproduct/:id', (req, res) => {
 });
 
 //edit a product
-router.post('/editproduct/:id', (req, res) => {
-    const {name,price,description,image,category} = req.body;
+router.post('/editproduct/:id', async (req, res) => {
+    const {name,price,description,image,category,amount} = req.body;
     try {
         //edit a product
-        Products.findByIdAndUpdate(req.params.id, {
+        await Products.findByIdAndUpdate(req.params.id, {
             name,
             price,
             description,
             image,
             category,
+            amount
         }, (err, doc) => {
             if(err){
                 console.log(err);
@@ -88,7 +90,7 @@ router.post('/editproduct/:id', (req, res) => {
 })
 
 //delete a product
-router.delete('/removeproduct/:id', (req, res) => {
+router.delete('/removeproduct/:id', async (req, res) => {
     const id = req.params.id;
     // if(req.isAuthenticated()){
     //     if(req.user.role=="admin"){
@@ -99,7 +101,7 @@ router.delete('/removeproduct/:id', (req, res) => {
     // }else{
     //     res.redirect('/login');
     // }    
-    Products.findByIdAndDelete(id, (err, doc) => {
+    await Products.findByIdAndDelete(id, (err, doc) => {
         if(err){
             console.log(err);
         }else{
@@ -108,8 +110,8 @@ router.delete('/removeproduct/:id', (req, res) => {
     })  
 })
 
-router.get('/products', (req, res) => {
-    Products.find({}, (err, docs) => {
+router.get('/products', async (req, res) => {
+    await Products.find({}, (err, docs) => {
         if(err){
             console.log(err);
         }else{
