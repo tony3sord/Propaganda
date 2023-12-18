@@ -16,3 +16,12 @@ category,) image es un arreglo que puedes poner hasta 3 imagenes, solo hay que h
 get: "/editproduct/:id" => renderiza la vista de editar producto el cual tambien envia en json el producto a editar(el cual debe de ser enviado por parametro, solo el id)
 post: "/editproduct/:id" => edita el producto el cual debe de ser enviado por parametro(solo el id)
 delete: "/removeproduct/:id" => elimina el producto, del cual envias por parametro su id
+
+*Categorias:
+get: "/allcategory" => devuelve en json las categorias para ser seleccionadas por el usuario
+get: "/category" => renderiza la vista category y envia en json las categorias
+get: "/addcategory" => renderiza la vista de añadir categoria
+get: "/editcategory/:id" => renderiza la vista editcategory y envia un json de la categoria a editar
+delete: "/removecategory/:id" => elimina la categoria enviada por parametro
+post: "/editcategory/:id" => edita la categoria 
+post: "/addcategory" => añade una categoría (name) 
