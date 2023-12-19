@@ -5,7 +5,7 @@ import Product from '../models/products.js';
 
 //Send the basket like a JSON Object
 router.get('/basket/:id', async (req, res) => {
-    const basket = await Basket.find({user:req.user._id}).populate('product');
+    const basket = await Basket.find({user:req.user._id});
     const total1 = await Basket.aggregate([
         { $match: { user: req.user._id } }, 
         { $group: { _id: null, total: { $sum: "$price" } } },

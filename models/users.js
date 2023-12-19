@@ -8,6 +8,7 @@ const UserSchema= new mongoose.Schema({
     role:String,
 });
 
+//For Register a User
 UserSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
       return next();
@@ -23,6 +24,7 @@ UserSchema.pre('save', async function(next) {
     }
   });
 
+//For change Password
 UserSchema.methods.changePassword = async function(newPassword) {
     try {
       const salt = await bcrypt.genSalt(10);

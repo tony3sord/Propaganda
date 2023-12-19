@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose'
 const app = express();
 import session from 'express-session';
 import userRoutes from './routes/user.js';
@@ -14,6 +15,8 @@ app.use(session({
     saveUninitialized: false
 }));
 
+
+
 app.use('/user', userRoutes);
 app.use('/product', productRoutes);
 app.use('/category', categoryRoutes);
@@ -22,6 +25,18 @@ app.use('/basket', basketRoutes);
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+
+
+main().catch((err) => console.log(err));
+async function main(){
+  try {
+      await mongoose.connect('mongodb://127.0.0.1/Propaganda');
+      console.log('MongoDB se conectó');
+  } catch (error) {
+      console.error('Error al conectar a MongoDB:', error);
+  }
+}
 
 app.listen('3000',()=>{
     console.log("servidor listo, puerto: 3000");

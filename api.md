@@ -31,3 +31,7 @@ get: "/basket/:id" => devuelve la cesta del usuario actual
 get: "/addproductstobasket" => añade un producto a la cesta 
 delete: "/removeproductstobasket/:id" => borra de la cesta el producto enviado por parametro (id)
 delete: "/removebasket/:id => borra la cesta enviada por paramtero (id)
+
+*Compras:
+get: "/buys" => renderiza la vista de las compras hechas y envia las compras en un json
+get: "/deliveredbuys/:id" => marca en entregada la compra pasada por parametro (id)

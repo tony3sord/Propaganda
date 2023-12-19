@@ -7,7 +7,7 @@ const ProductsSchema= new mongoose.Schema({
     images: [{url: String}],
     description:String,
     category:{
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.Mixed,
         ref:category,
     },
     amount:Number,
