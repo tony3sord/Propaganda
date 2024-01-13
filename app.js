@@ -9,6 +9,8 @@ import basketRoutes from './routes/basket.js';
 import passport from 'passport';
 
 
+app.use(express.json());
+
 app.use(session({
     secret: 'secret-key',
     resave: false,
@@ -16,14 +18,14 @@ app.use(session({
 }));
 
 
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/user', userRoutes);
 app.use('/product', productRoutes);
 app.use('/category', categoryRoutes);
 app.use('/basket', basketRoutes);
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 
 
@@ -31,7 +33,7 @@ app.use(passport.session());
 main().catch((err) => console.log(err));
 async function main(){
   try {
-      await mongoose.connect('mongodb://127.0.0.1/Propaganda');
+      mongoose.connect('mongodb://127.0.0.1/Propaganda');
       console.log('MongoDB se conectó');
   } catch (error) {
       console.error('Error al conectar a MongoDB:', error);
@@ -41,3 +43,5 @@ async function main(){
 app.listen('3000',()=>{
     console.log("servidor listo, puerto: 3000");
 })
+
+export default app;

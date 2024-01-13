@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
-import User from '../models/users.js'
+import User from '../models/users.js';
+import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import pkg from 'passport-jwt';
 const { Strategy: JwtStrategy,ExtractJwt } = pkg;
@@ -11,20 +12,27 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = 'secret';
 opts.issuer = 'accounts.examplesoft.com';
 opts.audience = 'yoursite.net';
+
 //strategy for login 
-passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-    User.findOne({id: jwt_payload.sub}, function(err, user) {
-        if (err) {
-            return done(err, false);
-        }
+passport.use(new JwtStrategy(opts, async function(jwt_payload, done) {
+    try {
+        const user = await User.findOne({id: jwt_payload.sub});
         if (user) {
             return done(null, user);
         } else {
             return done(null, false);
-            // or you could create a new account
         }
-    });
+    } catch (err) {
+        return done(err, false);
+    }
 }));
+
+passport.serializeUser((user,done)=>{
+    done(null,user);
+});
+passport.deserializeUser((user,done)=>{
+    done(null,user);
+});
 
 //show the view login
 router.get('/login', (req, res) => {
@@ -32,12 +40,24 @@ router.get('/login', (req, res) => {
 });
 
 //login
-router.post('/login', (req, res) => {
-    const {user,password} = req.body;
+//register user
+router.post('/register', async (req, res) => {
+    const {name,email,user,password} = req.body;
     try {
-        req.logIn({user,password},done,err);
+        const validate_email = await User.findOne({email});
+        const validate_user = await User.findOne({user});
+        console.log(validate_email,validate_user,"Las validaciones");
+        if(validate_email || validate_user){
+            res.status(200).send("email o usuario ya registrado");
+        }else{
+            const newUser = new User({name,email,user,password});
+            await newUser.save();
+            console.log("se creo todo bien");
+            res.status(200).json({user: newUser});
+        }
     } catch (error) {
         console.log(error);
+        res.status(500).send(error);
     }
 });
 
@@ -59,21 +79,18 @@ router.get('/register', (req, res) => {
 })
 
 //register user
-router.post('/register', (req, res) => {
-    const {name,email,user,password} = req.body;
+router.post('/login', async (req, res) => {
+    const {user,password} = req.body;
+    console.log(user,password,"Datos del usuario");
     try {
-        const validate = User.findOne({email});
-        if(validate.length > 0){
-            res.send("email ya registrado");
-        }else{
-            const newUser = new User({name,email,user,password});
-            newUser.save();
-            req.logIn({user,password},done,err);
-        }
+        req.logIn(user, function(err) {
+            if (err) { return next(err); }
+            return res.status(200).json({user});
+          });  
     } catch (error) {
         console.log(error);
     }
-})
+});
 
 
 export default router;
