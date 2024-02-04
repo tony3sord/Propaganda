@@ -36,5 +36,8 @@ UserSchema.methods.changePassword = async function (newPassword) {
 		throw error;
 	}
 };
+UserSchema.methods.validPassword = function (password) {
+	return bcrypt.compareSync(password, this.password);
+};
 
 export default mongoose.model("User", UserSchema);

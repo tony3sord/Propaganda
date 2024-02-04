@@ -3,30 +3,48 @@ const router = express.Router();
 import User from "../models/users.js";
 import jwt from "jsonwebtoken";
 import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
 import pkg from "passport-jwt";
+import dotenv from "dotenv";
+dotenv.config();
 const { Strategy: JwtStrategy, ExtractJwt } = pkg;
 
 //strategy for login with passport Json Web Token
 let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = "secret";
-opts.issuer = "accounts.examplesoft.com";
-opts.audience = "yoursite.net";
+opts.secretOrKey = process.env.SECRET_OR_KEY;
+
+function generateToken(user) {
+	const payload = {
+		sub: user.id,
+		iat: Math.floor(Date.now() / 1000),
+	};
+
+	return jwt.sign(payload, opts.secretOrKey, { expiresIn: "24h" });
+}
 
 //strategy for login
 passport.use(
-	new JwtStrategy(opts, async function (jwt_payload, done) {
-		try {
-			const user = await User.findOne({ id: jwt_payload.sub });
-			if (user) {
+	new LocalStrategy(
+		{
+			usernameField: "user",
+			passwordField: "password",
+		},
+		async function (username, password, done) {
+			try {
+				const user = await User.findOne({ user: username });
+				if (!user) {
+					return done(null, false, { message: "Incorrect username." });
+				}
+				if (!user.validPassword(password)) {
+					return done(null, false, { message: "Incorrect password." });
+				}
 				return done(null, user);
-			} else {
-				return done(null, false);
+			} catch (err) {
+				return done(err);
 			}
-		} catch (err) {
-			return done(err, false);
-		}
-	}),
+		},
+	),
 );
 
 passport.serializeUser((user, done) => {
@@ -48,13 +66,11 @@ router.post("/register", async (req, res) => {
 	try {
 		const validate_email = await User.findOne({ email });
 		const validate_user = await User.findOne({ user });
-		console.log(validate_email, validate_user, "Las validaciones");
 		if (validate_email || validate_user) {
 			res.status(200).send("email o usuario ya registrado");
 		} else {
-			const newUser = new User({ name, email, user, password });
+			const newUser = new User({ name, email, user, password, role: "client" });
 			await newUser.save();
-			console.log("se creo todo bien");
 			res.status(200).json({ user: newUser });
 		}
 	} catch (error) {
@@ -81,19 +97,22 @@ router.get("/register", (req, res) => {
 });
 
 //register user
-router.post("/login", async (req, res) => {
-	const { user, password } = req.body;
-	console.log(user, password, "Datos del usuario");
-	try {
-		req.logIn(user, function (err) {
+router.post("/login", function (req, res, next) {
+	passport.authenticate(
+		"local",
+		{ session: false },
+		function (err, user, info) {
 			if (err) {
 				return next(err);
 			}
-			return res.status(200).json({ user });
-		});
-	} catch (error) {
-		console.log(error);
-	}
+			if (!user) {
+				return res.status(401).json(info);
+			}
+
+			const token = generateToken(user);
+			res.json({ user, token });
+		},
+	)(req, res, next);
 });
 
 export default router;
