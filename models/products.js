@@ -11,6 +11,7 @@ const ProductsSchema = new mongoose.Schema({
 		ref: category,
 	},
 	amount: Number,
+	sales: Number,
 });
 
 export default mongoose.model("Products", ProductsSchema);

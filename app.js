@@ -7,6 +7,7 @@ import productRoutes from "./routes/product.js";
 import categoryRoutes from "./routes/category.js";
 import basketRoutes from "./routes/basket.js";
 import passport from "passport";
+import axios, { Axios } from "axios";
 
 app.use(express.json());
 
