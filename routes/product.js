@@ -3,6 +3,7 @@ const router = express.Router();
 import Products from "../models/products.js";
 import multer from "multer";
 import path from "path";
+import Opinion from "../models/opnion.js";
 
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -144,6 +145,88 @@ router.get("/products", async (req, res) => {
 			res.render("products", { products });
 		}
 	});
+});
+
+router.post("/assesmentproduct/:id", async (req, res) => {
+	const id = req.params.id;
+	const assessment = req.body.assessment;
+	try {
+		if (req.isAuthenticated()) {
+			const product = await Products.findById(id);
+			let opinion = await Opinion.findOne({ product: product, user: req.user });
+			if (!opinion) {
+				opinion = new Opinion({ product, user: req.user });
+			}
+			opinion.assessment = assessment;
+			await opinion.save();
+		} else {
+			res.redirect("/login");
+		}
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+router.post("/opineproduct/:id", async (req, res) => {
+	const id = req.params.id;
+	const opinionText = req.body.opinion;
+	try {
+		if (req.isAuthenticated()) {
+			const product = await Products.findById(id);
+			let opinion = await Opinion.findOne({ product: product, user: req.user });
+			if (!opinion) {
+				opinion = new Opinion({ product, user: req.user });
+			}
+			opinion.opinions = opinionText;
+			await opinion.save();
+		} else {
+			res.redirect("/login");
+		}
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+router.post("/editopineproduct/:id", async (req, res) => {
+	const id = req.params.id;
+	const opinionText = req.body.opinion;
+	const user = req.user;
+	try {
+		if (req.isAuthenticated()) {
+			await Opinion.findOneAndUpdate(
+				{ product: id, user: user._id },
+				{
+					$set: { opinions: opinionText },
+				},
+			);
+		} else {
+			res.redirect("/login");
+		}
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+router.post("/deleteopinionproduct/:id", async (req, res) => {
+	const id = req.params.id;
+	const user = req.user;
+	try {
+		const opinion = await Opinion.findOneAndUpdate(
+			{ product: id, user: user._id },
+			{ $unset: { opinion: 1 } },
+		);
+		if (opinion) {
+			res.status(200).send("Opinión eliminada correctamente");
+		} else {
+			res
+				.status(404)
+				.send(
+					"No es el usuario que ha escrito la opinión o no existe la opinión",
+				);
+		}
+	} catch (error) {
+		console.log(error);
+	}
 });
 
 export default router;
