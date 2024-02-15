@@ -7,15 +7,24 @@ import productRoutes from "./routes/product.js";
 import categoryRoutes from "./routes/category.js";
 import basketRoutes from "./routes/basket.js";
 import passport from "passport";
-import axios, { Axios } from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 
 app.use(express.json());
 
+//For server https
+const secret_https = process.env.SECRET_KEY_HTTPS;
+
 app.use(
 	session({
-		secret: "secret-key",
+		secret: secret_https,
 		resave: false,
 		saveUninitialized: false,
+		cookie: {
+			maxAge: 24 * 60 * 60 * 1000,
+			httpOnly: true,
+			secure: false,
+		},
 	}),
 );
 

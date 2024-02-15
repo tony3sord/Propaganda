@@ -16,6 +16,11 @@ category,amount) image es un arreglo que puedes poner hasta 3 imagenes, solo hay
 get: "/editproduct/:id" => renderiza la vista de editar producto el cual tambien envia en json el producto a editar(el cual debe de ser enviado por parametro, solo el id)
 post: "/editproduct/:id" => edita el producto el cual debe de ser enviado por parametro(id)
 delete: "/removeproduct/:id" => elimina el producto, del cual envias por parametro su id
+delete: "/deleteopinionproduct/:id" =>elimina la opinion realizada por el usuario en cuestion
+post: "/editopineproduct/:id" =>edita la opinion del producto
+post: "/opineproduct/:id =>Opinar sobre el producto
+post: "/assesmentproduct/:id" => valora el producto
+get: "/mostsellers" => devuelve los 5 productos mas vendidos
 
 \*Categorias:
 get: "/allcategory" => devuelve en json las categorias para ser seleccionadas por el usuario

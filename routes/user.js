@@ -1,19 +1,17 @@
 import express from "express";
 const router = express.Router();
 import User from "../models/users.js";
-import jwt from "jsonwebtoken";
+
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import FacebookStrategy from "passport-facebook";
 import GoogleStrategy from "passport-google-oauth20";
-import pkg from "passport-jwt";
+
 import dotenv from "dotenv";
 dotenv.config();
-const { Strategy: JwtStrategy, ExtractJwt } = pkg;
 
 //Keys of Passport
 let opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SECRET_OR_KEY;
 
 //Keys of Google
@@ -25,14 +23,14 @@ const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 
 //Generate token for JWT
-function generateToken(user) {
-	const payload = {
-		sub: user.id,
-		iat: Math.floor(Date.now() / 1000),
-	};
+// function generateToken(user) {
+// 	const payload = {
+// 		sub: user.id,
+// 		iat: Math.floor(Date.now() / 1000),
+// 	};
 
-	return jwt.sign(payload, opts.secretOrKey, { expiresIn: "24h" });
-}
+// 	return jwt.sign(payload, opts.secretOrKey, { expiresIn: "24h" });
+// }
 
 //Strategy for login with Google
 passport.use(
@@ -50,20 +48,20 @@ passport.use(
 	),
 );
 //strategy for login with facebook
-passport.use(
-	new FacebookStrategy(
-		{
-			clientID: FACEBOOK_APP_ID,
-			clientSecret: FACEBOOK_APP_SECRET,
-			callbackURL: "http://localhost:3000/auth/facebook/callback",
-		},
-		function (accessToken, refreshToken, profile, cb) {
-			User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-				return cb(err, user);
-			});
-		},
-	),
-);
+// passport.use(
+// 	new FacebookStrategy(
+// 		{
+// 			clientID: FACEBOOK_APP_ID,
+// 			clientSecret: FACEBOOK_APP_SECRET,
+// 			callbackURL: "http://localhost:3000/auth/facebook/callback",
+// 		},
+// 		function (accessToken, refreshToken, profile, cb) {
+// 			User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+// 				return cb(err, user);
+// 			});
+// 		},
+// 	),
+// );
 
 //strategy local for login local
 passport.use(

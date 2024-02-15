@@ -137,6 +137,7 @@ router.delete("/removeproduct/:id", async (req, res) => {
 	});
 });
 
+//get all products
 router.get("/products", async (req, res) => {
 	const products = await Products.find({}, (err) => {
 		if (err) {
@@ -147,6 +148,7 @@ router.get("/products", async (req, res) => {
 	});
 });
 
+//assesment a product
 router.post("/assesmentproduct/:id", async (req, res) => {
 	const id = req.params.id;
 	const assessment = req.body.assessment;
@@ -167,6 +169,7 @@ router.post("/assesmentproduct/:id", async (req, res) => {
 	}
 });
 
+//opine a product
 router.post("/opineproduct/:id", async (req, res) => {
 	const id = req.params.id;
 	const opinionText = req.body.opinion;
@@ -187,6 +190,7 @@ router.post("/opineproduct/:id", async (req, res) => {
 	}
 });
 
+//edit opine a product
 router.post("/editopineproduct/:id", async (req, res) => {
 	const id = req.params.id;
 	const opinionText = req.body.opinion;
@@ -207,7 +211,8 @@ router.post("/editopineproduct/:id", async (req, res) => {
 	}
 });
 
-router.post("/deleteopinionproduct/:id", async (req, res) => {
+//delete opine a product
+router.delete("/deleteopinionproduct/:id", async (req, res) => {
 	const id = req.params.id;
 	const user = req.user;
 	try {
@@ -224,6 +229,16 @@ router.post("/deleteopinionproduct/:id", async (req, res) => {
 					"No es el usuario que ha escrito la opinión o no existe la opinión",
 				);
 		}
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+//get the most sold products
+router.get("/mostsellers", async (req, res) => {
+	try {
+		const products = await Products.find().sort({ amount: -1 }).limit(5);
+		res.json({ products });
 	} catch (error) {
 		console.log(error);
 	}

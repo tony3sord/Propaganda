@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import products from "./products";
-import user from "./users";
 
 const OpinionSchema = new mongoose.Schema({
 	product: {
