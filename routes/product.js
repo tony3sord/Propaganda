@@ -244,4 +244,26 @@ router.get("/mostsellers", async (req, res) => {
 	}
 });
 
+router.get("/recents", async (req, res) => {
+	try {
+		const recentProducts = await Products.find()
+			.sort({ createdAt: -1 })
+			.limit(5);
+		res.json({ recentProducts });
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+router.get("/updateproducts", async (req, res) => {
+	try {
+		const updateProducts = await Products.find()
+			.sort({ updateAt: -1 })
+			.limit(5);
+		res.json({ updateProducts });
+	} catch (error) {
+		console.log(error);
+	}
+});
+
 export default router;

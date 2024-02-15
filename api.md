@@ -21,6 +21,8 @@ post: "/editopineproduct/:id" =>edita la opinion del producto
 post: "/opineproduct/:id =>Opinar sobre el producto
 post: "/assesmentproduct/:id" => valora el producto
 get: "/mostsellers" => devuelve los 5 productos mas vendidos
+get: "/recents" => devuelve los 5 ultimos añadidos
+get: "/updateproducts" => devuelve los 5 ultimos actualizados
 
 \*Categorias:
 get: "/allcategory" => devuelve en json las categorias para ser seleccionadas por el usuario
