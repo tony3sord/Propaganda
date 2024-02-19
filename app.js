@@ -40,9 +40,9 @@ main().catch((err) => console.log(err));
 async function main() {
 	try {
 		mongoose.connect("mongodb://127.0.0.1/Propaganda");
-		console.log("MongoDB se conectó");
+		console.log("MongoDB is Online");
 	} catch (error) {
-		console.error("Error al conectar a MongoDB:", error);
+		console.error("Error to the connect with MongoDB:", error);
 	}
 }
 
@@ -54,7 +54,7 @@ async function main() {
 // });
 
 app.listen("3000", () => {
-	console.log("servidor listo, puerto: 3000");
+	console.log("Server Active, port: 3000");
 });
 
 export default app;
