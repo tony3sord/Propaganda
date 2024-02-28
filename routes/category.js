@@ -54,39 +54,44 @@ router.get("/addcategory", (req, res) => {
 
 //delete category
 router.delete("/removecategory/:id", async (req, res) => {
+	const id = req.params.id;
 	try {
-		await Category.findByIdAndDelete(req.params.id);
+		await Category.findByIdAndDelete(id);
+		res.status(200).send("Category deleted successfully");
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Server error");
 	}
-	res.redirect("/category");
 });
 
 //edit category
-router.post("/editcategory/:id", async (req, res) => {
+router.patch("/editcategory/:id", async (req, res) => {
 	const { name } = req.body;
 	try {
 		await Category.findByIdAndUpdate(req.params.id, {
 			name,
 		});
+		res.status(200).send("Category edited successfully");
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Server error");
 	}
-	res.redirect("/category");
 });
 
 //add category
 router.post("/addcategory", async (req, res) => {
 	const { name } = req.body;
+	console.log(name);
 	try {
 		const newCategory = new Category({
 			name,
 		});
 		await newCategory.save();
+		res.status(200).send("Category added successfully");
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Server error");
 	}
-	res.redirect("/category");
 });
 
 export default router;

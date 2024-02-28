@@ -14,6 +14,8 @@ app.use(express.json());
 
 //For server https
 const secret_https = process.env.SECRET_KEY_HTTPS;
+const PORT = parseInt(process.env.PORT);
+const bd_connetion = process.env.BD_CONNETION;
 
 app.use(
 	session({
@@ -39,7 +41,7 @@ app.use("/basket", basketRoutes);
 main().catch((err) => console.log(err));
 async function main() {
 	try {
-		mongoose.connect("mongodb://127.0.0.1/Propaganda");
+		mongoose.connect(`mongodb://127.0.0.1/${bd_connetion}`);
 		console.log("MongoDB is Online");
 	} catch (error) {
 		console.error("Error to the connect with MongoDB:", error);
@@ -53,7 +55,7 @@ async function main() {
 // 	res.sendFile(path.join(__dirname, "build", "index.html"));
 // });
 
-app.listen("3000", () => {
+app.listen(PORT, () => {
 	console.log("Server Active, port: 3000");
 });
 
