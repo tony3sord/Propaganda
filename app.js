@@ -42,7 +42,7 @@ main().catch((err) => console.log(err));
 async function main() {
 	try {
 		mongoose.connect(`mongodb://127.0.0.1/${bd_connetion}`);
-		console.log("MongoDB is Online");
+		console.log("MongoDB is Online,now");
 	} catch (error) {
 		console.error("Error to the connect with MongoDB:", error);
 	}
