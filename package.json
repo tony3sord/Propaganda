@@ -11,14 +11,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tony3sord/Propaganda-y-Eventos.git"
+		"url": "git+https://github.com/tony3sord/Propaganda.git"
 	},
 	"author": "Darioflo_Tony3sord",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/tony3sord/Propaganda-y-Eventos/issues"
+		"url": "https://github.com/tony3sord/Propaganda/issues"
 	},
-	"homepage": "https://github.com/tony3sord/Propaganda-y-Eventos#readme",
+	"homepage": "https://github.com/tony3sord/Propaganda#readme",
 	"dependencies": {
 		"bcrypt": "^5.1.1",
 		"dotenv": "^16.4.1",
