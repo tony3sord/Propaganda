@@ -56,7 +56,7 @@ async function main() {
 // });
 
 app.listen(PORT, () => {
-	console.log("Server Active, port: 3000");
+	console.log(`Server Active, port: ${PORT}`);
 });
 
 export default app;
