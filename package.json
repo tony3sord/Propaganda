@@ -11,12 +11,12 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tony3sord/Propaganda.git"
+		"url": "git+https://github.com/tony3sord/Propaganda1.git"
 	},
 	"author": "Darioflo_Tony3sord",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/tony3sord/Propaganda/issues"
+		"url": "https://github.com/tony3sord/Propaganda1/issues"
 	},
 	"homepage": "https://github.com/tony3sord/Propaganda1#readme",
 	"dependencies": {
