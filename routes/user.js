@@ -104,7 +104,7 @@ router.get("/currentuser", (req, res) => {
 
 //show the view register user
 router.get("/register", (req, res) => {
-	res.render("register");
+	res.json("Hola");
 });
 
 //register user
