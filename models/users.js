@@ -5,7 +5,10 @@ const UserSchema = new mongoose.Schema({
 	email: String,
 	user: String,
 	password: String,
-	role: String,
+	role: {
+		type: String,
+		enum: ["Cliente", "Admin", "Superadmin"],
+	},
 });
 
 //For Register a User

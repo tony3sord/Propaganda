@@ -6,6 +6,8 @@ import userRoutes from "./routes/user.js";
 import productRoutes from "./routes/product.js";
 import categoryRoutes from "./routes/category.js";
 import basketRoutes from "./routes/basket.js";
+import shopRoutes from "./routes/shop.js";
+import buysRoutes from "./routes/buys.js";
 import passport from "passport";
 import dotenv from "dotenv";
 dotenv.config();
@@ -37,6 +39,8 @@ app.use("/user", userRoutes);
 app.use("/product", productRoutes);
 app.use("/category", categoryRoutes);
 app.use("/basket", basketRoutes);
+app.use("/shop", shopRoutes);
+app.use("/buys", buysRoutes);
 
 main().catch((err) => console.log(err));
 async function main() {

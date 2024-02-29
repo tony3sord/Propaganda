@@ -18,20 +18,6 @@ opts.secretOrKey = process.env.SECRET_OR_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
-//Keys of Facebook
-const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
-
-//Generate token for JWT
-// function generateToken(user) {
-// 	const payload = {
-// 		sub: user.id,
-// 		iat: Math.floor(Date.now() / 1000),
-// 	};
-
-// 	return jwt.sign(payload, opts.secretOrKey, { expiresIn: "24h" });
-// }
-
 //Strategy for login with Google
 passport.use(
 	new GoogleStrategy(
@@ -47,22 +33,6 @@ passport.use(
 		},
 	),
 );
-
-//strategy for login with facebook
-// passport.use(
-// 	new FacebookStrategy(
-// 		{
-// 			clientID: FACEBOOK_APP_ID,
-// 			clientSecret: FACEBOOK_APP_SECRET,
-// 			callbackURL: "http://localhost:3000/auth/facebook/callback",
-// 		},
-// 		function (accessToken, refreshToken, profile, cb) {
-// 			User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-// 				return cb(err, user);
-// 			});
-// 		},
-// 	),
-// );
 
 //strategy local for login local
 passport.use(

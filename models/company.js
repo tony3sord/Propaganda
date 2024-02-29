@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import UEB from "./ueb.js";
+import Shop from "./shop.js";
 
 const companySchema = new mongoose.Schema({
 	name: "Empresa Nacional Propaganda y Eventos",
-	ueb: [{ type: mongoose.Schema.Types.ObjectId, ref: UEB }],
+	shop: [{ type: mongoose.Schema.Types.ObjectId, ref: Shop }],
 });
 
 export default mongoose.model("Company", companySchema);
