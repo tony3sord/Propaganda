@@ -1,16 +1,14 @@
 import mongoose from "mongoose";
 import Basket from "./basket.js";
-import UEB from "./ueb.js";
 
+import Shop from "./shop.js";
 const BuysSchema = new mongoose.Schema({
+	shop: { type: mongoose.Schema.Types.ObjectId, ref: Shop },
 	basket: {
 		type: mongoose.Schema.Types.Mixed,
 		ref: Basket,
 	},
-	ueb: {
-		type: mongoose.Schema.Types.Mixed,
-		ref: UEB,
-	},
+
 	street: String,
 	number: Number,
 	city: String,
