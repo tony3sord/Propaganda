@@ -13,6 +13,8 @@ import buysRoutes from "./routes/buys.js";
 import contactRoutes from "./routes/contact.js";
 import aboutRoutes from "./routes/about.js";
 import helpRoutes from "./routes/help.js";
+import promotionRoutes from "./routes/promotion.js";
+import materialRoutes from "./routes/material.js";
 
 import passport from "passport";
 import dotenv from "dotenv";
@@ -50,6 +52,8 @@ app.use("/buys", buysRoutes);
 app.use("/contact", contactRoutes);
 app.use("/about", aboutRoutes);
 app.use("/help", helpRoutes);
+app.use("/promotion", promotionRoutes);
+app.use("/material", materialRoutes);
 
 main().catch((err) => console.log(err));
 async function main() {
