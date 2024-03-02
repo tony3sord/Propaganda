@@ -34,13 +34,14 @@ router.get("/shops/:id", async (req, res) => {
 
 router.post("/addshop", async (req, res) => {
 	const { name, user, password } = req.body;
-	const admin = {
+	console.log(req.body);
+	const este = {
 		user,
 		password,
 		role: "Admin",
 	};
 	try {
-		const este = await User.create(admin);
+		await User.findOneAndUpdate({ user: este.user }, este, { upsert: true });
 		const newShop = new Shop({ name, este });
 		await newShop.save();
 		res.status(200).send("Tienda Creada Correctamente");

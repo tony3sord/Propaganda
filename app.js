@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 const app = express();
 import session from "express-session";
+import cors from "cors";
 
 //Import Routes
 import userRoutes from "./routes/user.js";
@@ -65,12 +66,11 @@ async function main() {
 	}
 }
 
-//Para servir la api a react
-// app.use(express.static(path.join(__dirname, "build")));
-
-// app.get("*", (req, res) => {
-// 	res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+app.use(
+	cors({
+		origin: "http://localhost:3000", // reemplaza esto con la URL de tu frontend
+	}),
+);
 
 app.listen(PORT, () => {
 	console.log(`Server Active, port: ${PORT}`);

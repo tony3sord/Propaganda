@@ -8,7 +8,8 @@ import minioClient from "../file.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/addproduct", upload.array("image", 3), async (req, res) => {
+router.post("/addproduct/:shop", upload.array("image", 3), async (req, res) => {
+	const shop = req.params.shop;
 	const { name, price, description, category, amount } = req.body;
 	const images = req.files;
 	console.log(images, "Desde multer");
@@ -39,6 +40,7 @@ router.post("/addproduct", upload.array("image", 3), async (req, res) => {
 		const imagePaths = await Promise.all(imageUploadPromises);
 		console.log(imagePaths, "desde minio");
 		const newProduct = new Products({
+			shop,
 			name,
 			price,
 			description,
@@ -182,8 +184,9 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 });
 
 //get all products
-router.get("/products", async (req, res) => {
-	const products = await Products.find({}, (err) => {
+router.get("/products/:shop", async (req, res) => {
+	const shop = req.params.shop;
+	const products = await Products.find({ shop }, (err) => {
 		if (err) {
 			console.log(err);
 		} else {
