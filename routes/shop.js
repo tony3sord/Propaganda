@@ -49,3 +49,5 @@ router.post("/addshop", async (req, res) => {
 		res.status(500).send("Error en el servidor");
 	}
 });
+
+export default router;

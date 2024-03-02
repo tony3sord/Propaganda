@@ -53,3 +53,5 @@ router.delete("/deletematerial/:shop/:material", async (req, res) => {
 		res.status(500).send("Server Error");
 	}
 });
+
+export default router;

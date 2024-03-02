@@ -5,4 +5,4 @@ const PromotionSchema = new mongoose.Schema({
 	images: [String],
 });
 
-module.exports = mongoose.model("Promotion", PromotionSchema);
+export default mongoose.model("Promotion", PromotionSchema);

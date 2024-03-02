@@ -66,3 +66,5 @@ router.get("/bestsellers", async (req, res) => {
 	const bestsellers = await Products.find().sort({ sales: -1 }).limit(10);
 	res.json({ bestsellers });
 });
+
+export default router;

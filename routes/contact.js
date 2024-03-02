@@ -57,3 +57,5 @@ router.delete("/removecontact/:shop", async (req, res) => {
 		res.status(500).send("Server error");
 	}
 });
+
+export default router;

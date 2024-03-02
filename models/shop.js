@@ -5,4 +5,6 @@ const shopSchema = new mongoose.Schema({
 	admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
-module.exports = mongoose.model("Shop", shopSchema);
+const Shop = mongoose.model("Shop", shopSchema);
+
+export default Shop;
