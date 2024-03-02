@@ -4,30 +4,55 @@ import Products from "../models/products.js";
 import multer from "multer";
 import path from "path";
 import Opinion from "../models/opnion.js";
+import minioClient from "../file.js";
 
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, "public/images");
-	},
-	filename: function (req, file, cb) {
-		const ext = path.extname(file.originalname);
-		const filename = `${Date.now()}${ext}`;
-		cb(null, file.originalname);
-	},
-});
+// const storage = multer.diskStorage({
+// 	destination: function (req, file, cb) {
+// 		cb(null, "public/images");
+// 	},
+// 	filename: function (req, file, cb) {
+// 		const ext = path.extname(file.originalname);
+// 		const filename = `${Date.now()}${ext}`;
+// 		cb(null, file.originalname);
+// 	},
+// });
 
 const upload = multer({ storage: storage });
 
 //add a product
 router.post("/addproduct", upload.array("image", 3), async (req, res) => {
 	const { name, price, description, category, amount } = req.body;
-	const image = req.files.map((file) => file.path);
+	const images = req.files;
+
 	try {
+		const imagePaths = [];
+
+		for (let image of images) {
+			const imagePath = image.path;
+			const imageStream = fs.createReadStream(imagePath);
+			const imageType = image.mimetype;
+
+			minioClient.putObject(
+				"products",
+				imagePath,
+				imageStream,
+				imageType,
+				function (err, etag) {
+					if (err) {
+						return console.log(err);
+					}
+					console.log("File uploaded successfully.");
+				},
+			);
+
+			imagePaths.push(imagePath);
+		}
+
 		const newProduct = new Products({
 			name,
 			price,
 			description,
-			image,
+			image: imagePaths,
 			category,
 			amount,
 		});
@@ -69,30 +94,61 @@ router.get("/editproduct/:id", async (req, res) => {
 });
 
 //edit a product
-router.post("/editproduct/:id", async (req, res) => {
+router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 	const { name, price, description, category, amount } = req.body;
-	const image = req.files.map((file) => file.path);
+	const images = req.files;
+
 	try {
-		//edit a product
-		await Products.findByIdAndUpdate(
-			req.params.id,
-			{
-				name,
-				price,
-				description,
-				image,
-				category,
-				amount,
-			},
-			(err, doc) => {
-				if (err) {
-					console.log(err);
-					res.status(404).send("Error al actualizar el producto ");
-				} else {
-					res.status(200).send("Producto actualizado correctamente");
-				}
-			},
-		);
+		const product = await Products.findById(req.params.id);
+		if (!product) {
+			return res.status(404).send("Producto no encontrado");
+		}
+
+		// Borrar las imágenes antiguas
+		const objectsToRemove = product.image.map((imagePath) => ({
+			name: imagePath,
+		}));
+
+		minioClient.removeObjects("my-bucket", objectsToRemove, function (err) {
+			if (err) {
+				return console.log("Unable to remove object: ", err);
+			}
+			console.log("Removed the object.");
+		});
+
+		// Subir las nuevas imágenes
+		const imagePaths = [];
+		for (let image of images) {
+			const imagePath = image.path;
+			const imageStream = fs.createReadStream(imagePath);
+			const imageType = image.mimetype;
+
+			minioClient.putObject(
+				"my-bucket",
+				imagePath,
+				imageStream,
+				imageType,
+				function (err, etag) {
+					if (err) {
+						return console.log(err);
+					}
+					console.log("File uploaded successfully.");
+				},
+			);
+
+			imagePaths.push(imagePath);
+		}
+
+		// Actualizar el producto
+		product.name = name;
+		product.price = price;
+		product.description = description;
+		product.image = imagePaths;
+		product.category = category;
+		product.amount = amount;
+		await product.save();
+
+		res.status(200).send("Producto actualizado correctamente");
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error del servidor");
@@ -100,30 +156,39 @@ router.post("/editproduct/:id", async (req, res) => {
 });
 
 //delete a product
-router.delete("/removeproduct/:id", async (req, res) => {
+router.delete("/deleteproduct/:id", async (req, res) => {
 	const id = req.params.id;
-	// if(req.isAuthenticated()){
-	//     if(req.user.role=="admin"){
-	//         await Products.findByIdAndDelete(id, (err, doc) => {
-	//             if(err){
-	//                 res.status(500).send("Error al eliminar el producto");
-	//             }else{
-	//                 res.status(200).send("Producto eliminado correctamente");
-	//             }
-	//         })
-	//     }else{
-	//         res.status(403).send("No tiene permisos para eliminar el producto");
-	//     }
-	// }else{
-	//     res.status(403).send("Debe autenticarse");
-	// }
-	await Products.findByIdAndDelete(id, (err) => {
-		if (err) {
-			res.status(500).send("Error al eliminar el producto");
-		} else {
-			res.status(200).send("Producto eliminado correctamente");
+	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "admin") {
+		// 		res.status(200).send("Producto eliminado correctamente");
+		// 	} else {
+		// 		res.status(403).send("No tiene permisos para eliminar el producto");
+		// 	}
+		// } else {
+		// 	res.status(403).send("debe autenticarse");
+		// }
+		const product = await Products.findById(req.params.id);
+		if (!product) {
+			return res.status(404).send("Producto no encontrado");
 		}
-	});
+		// Borrar las imágenes
+		const objectsToRemove = product.image.map((imagePath) => ({
+			name: imagePath,
+		}));
+
+		minioClient.removeObjects("my-bucket", objectsToRemove, function (err) {
+			if (err) {
+				return console.log("Unable to remove object: ", err);
+			}
+			console.log("Removed the object.");
+		});
+		await Products.findByIdAndDelete(req.params.id);
+		res.status(200).send("Producto eliminado correctamente");
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
 });
 
 //get all products
