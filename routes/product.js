@@ -6,64 +6,55 @@ import path from "path";
 import Opinion from "../models/opnion.js";
 import minioClient from "../file.js";
 
-// const storage = multer.diskStorage({
-// 	destination: function (req, file, cb) {
-// 		cb(null, "public/images");
-// 	},
-// 	filename: function (req, file, cb) {
-// 		const ext = path.extname(file.originalname);
-// 		const filename = `${Date.now()}${ext}`;
-// 		cb(null, file.originalname);
-// 	},
-// });
+const upload = multer({ storage: multer.memoryStorage() });
 
-const upload = multer({ storage: storage });
-
-//add a product
 router.post("/addproduct", upload.array("image", 3), async (req, res) => {
 	const { name, price, description, category, amount } = req.body;
 	const images = req.files;
-
+	console.log(images, "Desde multer");
 	try {
-		const imagePaths = [];
-
-		for (let image of images) {
-			const imagePath = image.path;
-			const imageStream = fs.createReadStream(imagePath);
+		const imageUploadPromises = images.map((image) => {
+			const imagePath = image.originalname;
+			const imageBuffer = image.buffer;
 			const imageType = image.mimetype;
 
-			minioClient.putObject(
-				"products",
-				imagePath,
-				imageStream,
-				imageType,
-				function (err, etag) {
-					if (err) {
-						return console.log(err);
-					}
-					console.log("File uploaded successfully.");
-				},
-			);
+			return new Promise((resolve, reject) => {
+				minioClient.putObject(
+					"propaganda",
+					imagePath,
+					imageBuffer,
+					imageType,
+					function (err, etag) {
+						if (err) {
+							reject(err);
+						} else {
+							const imageUrl = `https://your-minio-server.com/propaganda/${imagePath}`;
+							resolve(imageUrl);
+						}
+					},
+				);
+			});
+		});
 
-			imagePaths.push(imagePath);
-		}
-
+		const imagePaths = await Promise.all(imageUploadPromises);
+		console.log(imagePaths, "desde minio");
 		const newProduct = new Products({
 			name,
 			price,
 			description,
-			image: imagePaths,
 			category,
 			amount,
+			images: [...imagePaths],
 		});
-		await newProduct.save();
+		console.log(newProduct, "desde el newProduct");
+		const a = await newProduct.save();
+		console.log(a, "desde el save");
 		res.status(200).send("Producto añadido correctamente");
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error al guardar el producto");
 	}
 });
-
 //show the view edit a product
 router.get("/editproduct/:id", async (req, res) => {
 	const id = req.params.id;
@@ -109,7 +100,7 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 			name: imagePath,
 		}));
 
-		minioClient.removeObjects("my-bucket", objectsToRemove, function (err) {
+		minioClient.removeObjects("propaganda", objectsToRemove, function (err) {
 			if (err) {
 				return console.log("Unable to remove object: ", err);
 			}
@@ -143,7 +134,7 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 		product.name = name;
 		product.price = price;
 		product.description = description;
-		product.image = imagePaths;
+		product.images = imagePaths;
 		product.category = category;
 		product.amount = amount;
 		await product.save();
@@ -157,7 +148,6 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 
 //delete a product
 router.delete("/deleteproduct/:id", async (req, res) => {
-	const id = req.params.id;
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "admin") {
@@ -177,7 +167,7 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 			name: imagePath,
 		}));
 
-		minioClient.removeObjects("my-bucket", objectsToRemove, function (err) {
+		minioClient.removeObjects("propaganda", objectsToRemove, function (err) {
 			if (err) {
 				return console.log("Unable to remove object: ", err);
 			}
