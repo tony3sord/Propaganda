@@ -27,6 +27,7 @@ app.use(express.json());
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
 const bd_connetion = process.env.BD_CONNETION;
+const cors = process.env.CORS;
 
 app.use(
 	session({
@@ -68,7 +69,7 @@ async function main() {
 
 app.use(
 	cors({
-		origin: "http://localhost:3000", // reemplaza esto con la URL de tu frontend
+		origin: cors,
 	}),
 );
 
