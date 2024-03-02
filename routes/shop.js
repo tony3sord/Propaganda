@@ -7,13 +7,13 @@ router.get("/shops", async (req, res) => {
 	try {
 		if (req.user && req.user.role === "superadmin") {
 			const shops = await Shop.find();
-			res.json({ shops });
+			res.status(200).json({ shops });
 		} else {
 			res.status(403).send("No tienes acceso a esta URL");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(404).send("Error en el servidor");
+		res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -28,7 +28,7 @@ router.get("/shops/:id", async (req, res) => {
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(404).send("Error en el servidor");
+		res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -46,6 +46,6 @@ router.post("/addshop", async (req, res) => {
 		res.status(200).send("Tienda Creada Correctamente");
 	} catch (error) {
 		console.log(error);
-		res.status(404).send("Error en el servidor");
+		res.status(500).send("Error en el servidor");
 	}
 });

@@ -4,7 +4,6 @@ import User from "../models/users.js";
 
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import FacebookStrategy from "passport-facebook";
 import GoogleStrategy from "passport-google-oauth20";
 
 import dotenv from "dotenv";
@@ -65,12 +64,6 @@ passport.deserializeUser((user, done) => {
 	done(null, user);
 });
 
-//show the view login
-router.get("/login", (req, res) => {
-	res.render("login");
-});
-
-//login
 //register user
 router.post("/register", async (req, res) => {
 	const { name, email, user, password } = req.body;
@@ -78,7 +71,7 @@ router.post("/register", async (req, res) => {
 		const validate_email = await User.findOne({ email });
 		const validate_user = await User.findOne({ user });
 		if (validate_email || validate_user) {
-			res.status(200).send("email o usuario ya registrado");
+			res.status(409).send("email o usuario ya registrado");
 		} else {
 			const newUser = new User({ name, email, user, password, role: "client" });
 			await newUser.save();
@@ -93,18 +86,17 @@ router.post("/register", async (req, res) => {
 //logout
 router.post("/logout", (req, res) => {
 	req.logout();
-	res.redirect("/");
+	res.status(200).send("Se ha cerrado la sesión correctamente");
 });
 
 //get the current user
 router.get("/currentuser", (req, res) => {
-	const currentuser = req.user;
-	res.json({ currentuser });
-});
-
-//show the view register user
-router.get("/register", (req, res) => {
-	res.json("Hola");
+	if (req.isAuthenticated()) {
+		const currentuser = req.user;
+		res.json({ currentuser });
+	} else {
+		res.status(401).send("No hay usuario logueado");
+	}
 });
 
 //register user
@@ -116,21 +108,9 @@ router.post("/login", function (req, res, next) {
 		if (!user) {
 			return res.status(401).json(info);
 		}
-
-		const token = generateToken(user);
-		res.json({ user, token });
+		res.status(200).json({ user });
 	})(req, res, next);
 });
-
-//login with facebook
-router.get(
-	"/auth/facebook/callback",
-	passport.authenticate("facebook", { failureRedirect: "/login" }),
-	(req, res) => {
-		// Successful authentication, redirect home.
-		res.redirect("/home");
-	},
-);
 
 //Login with Google
 router.get(
@@ -138,7 +118,7 @@ router.get(
 	passport.authenticate("google", { failureRedirect: "/login" }),
 	(req, res) => {
 		// Successful authentication, redirect home.
-		res.redirect("/");
+		res.status(200).send("Usuario autenticado correctamente");
 	},
 );
 
