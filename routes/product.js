@@ -18,20 +18,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-//show the view add a product
-router.get("/addproduct", (req, res) => {
-	// if(req.isAuthenticated()){
-	//     if(req.user.role=="admin"){
-	//         res.render('addproduct');
-	//     }else{
-	//         res.redirect('/');
-	//     }
-	// }else{
-	//     res.redirect('/login');
-	// }
-	res.render("addproduct");
-});
-
 //add a product
 router.post("/addproduct", upload.array("image", 3), async (req, res) => {
 	const { name, price, description, category, amount } = req.body;
@@ -46,7 +32,7 @@ router.post("/addproduct", upload.array("image", 3), async (req, res) => {
 			amount,
 		});
 		await newProduct.save();
-		res.redirect("/");
+		res.status(200).send("Producto añadido correctamente");
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error al guardar el producto");
@@ -75,8 +61,9 @@ router.get("/editproduct/:id", async (req, res) => {
 	const product = await Products.findById(id, (err, doc) => {
 		if (err) {
 			console.log(err);
+			res.status(404).send("Error al obtener el producto");
 		} else {
-			res.render("editproduct", { product });
+			res.status(200).send("Producto obtenido correctamente").json({ product });
 		}
 	});
 });
@@ -100,13 +87,15 @@ router.post("/editproduct/:id", async (req, res) => {
 			(err, doc) => {
 				if (err) {
 					console.log(err);
+					res.status(404).send("Error al actualizar el producto ");
 				} else {
-					res.redirect("/");
+					res.status(200).send("Producto actualizado correctamente");
 				}
 			},
 		);
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
@@ -117,22 +106,22 @@ router.delete("/removeproduct/:id", async (req, res) => {
 	//     if(req.user.role=="admin"){
 	//         await Products.findByIdAndDelete(id, (err, doc) => {
 	//             if(err){
-	//                 console.log(err);
+	//                 res.status(500).send("Error al eliminar el producto");
 	//             }else{
-	//                 res.redirect('/');
+	//                 res.status(200).send("Producto eliminado correctamente");
 	//             }
 	//         })
 	//     }else{
-	//         res.redirect('/');
+	//         res.status(403).send("No tiene permisos para eliminar el producto");
 	//     }
 	// }else{
-	//     res.redirect('/login');
+	//     res.status(403).send("Debe autenticarse");
 	// }
 	await Products.findByIdAndDelete(id, (err) => {
 		if (err) {
-			console.log(err);
+			res.status(500).send("Error al eliminar el producto");
 		} else {
-			res.redirect("/");
+			res.status(200).send("Producto eliminado correctamente");
 		}
 	});
 });
@@ -143,7 +132,7 @@ router.get("/products", async (req, res) => {
 		if (err) {
 			console.log(err);
 		} else {
-			res.render("products", { products });
+			res.status(200).json({ products });
 		}
 	});
 });
@@ -159,13 +148,15 @@ router.post("/assesmentproduct/:id", async (req, res) => {
 			if (!opinion) {
 				opinion = new Opinion({ product, user: req.user });
 			}
-			opinion.assessment = assessment;
+			opinion.assessments = assessment;
 			await opinion.save();
+			res.status(200).send("Opinión guardada correctamente");
 		} else {
-			res.redirect("/login");
+			res.status(403).send("Debe autenticarse");
 		}
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
@@ -182,11 +173,13 @@ router.post("/opineproduct/:id", async (req, res) => {
 			}
 			opinion.opinions = opinionText;
 			await opinion.save();
+			res.status(200).send("Opinión guardada correctamente");
 		} else {
-			res.redirect("/login");
+			res.status(403).send("Debe autenticarse");
 		}
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
@@ -203,11 +196,17 @@ router.post("/editopineproduct/:id", async (req, res) => {
 					$set: { opinions: opinionText },
 				},
 			);
+			res.status(200).send("Opinión eliminada correctamente");
 		} else {
-			res.redirect("/login");
+			res
+				.status(404)
+				.send(
+					"No es el usuario que ha escrito la opinión o no existe la opinión",
+				);
 		}
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
@@ -231,6 +230,7 @@ router.delete("/deleteopinionproduct/:id", async (req, res) => {
 		}
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
@@ -238,31 +238,36 @@ router.delete("/deleteopinionproduct/:id", async (req, res) => {
 router.get("/mostsellers", async (req, res) => {
 	try {
 		const products = await Products.find().sort({ amount: -1 }).limit(5);
-		res.json({ products });
+		res.status(200).json({ products });
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
+//get the most expensive products
 router.get("/recents", async (req, res) => {
 	try {
 		const recentProducts = await Products.find()
 			.sort({ createdAt: -1 })
 			.limit(5);
-		res.json({ recentProducts });
+		res.status(200).json({ recentProducts });
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 
+//Product updated recently
 router.get("/updateproducts", async (req, res) => {
 	try {
 		const updateProducts = await Products.find()
 			.sort({ updateAt: -1 })
 			.limit(5);
-		res.json({ updateProducts });
+		res.status(200).json({ updateProducts });
 	} catch (error) {
 		console.log(error);
+		res.status(500).send("Error del servidor");
 	}
 });
 

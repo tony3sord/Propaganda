@@ -11,7 +11,7 @@ router.get("/basket/:id", async (req, res) => {
 		{ $group: { _id: null, total: { $sum: "$price" } } },
 	]);
 	const total = total1[0].total;
-	res.json({ basket, total });
+	res.status(200).json({ basket, total });
 });
 
 //Add a product to the basket
@@ -22,7 +22,7 @@ router.get("/addproductstobasket/:id", async (req, res) => {
 		{ $push: { product: product } },
 	);
 	const basket = await Basket.find({ user: req.user._id });
-	res.json({ basket });
+	res.status(200).json({ basket });
 });
 
 //Delete a product of the basket
@@ -33,13 +33,13 @@ router.delete("/removeproductstobasket/:id", async (req, res) => {
 		{ $pull: { product: product } },
 	);
 	const basket = await Basket.find({ user: req.params.id });
-	res.json({ basket });
+	res.status(200).json({ basket });
 });
 
 //Delete the basket
 router.delete("/removebasket/:id", async (req, res) => {
 	await Basket.findByIdAndDelete(req.params.id);
-	res.redirect("/products");
+	res.status(200).send("Basket deleted");
 });
 
 export default router;
