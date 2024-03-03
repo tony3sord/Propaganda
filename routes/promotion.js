@@ -6,7 +6,7 @@ router.get("/promotion/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	try {
 		const promotion = await Promotion.findOne({ shop });
-		res.status(200).json(promotion);
+		res.status(200).json({ promotion });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Server error");

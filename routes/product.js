@@ -8,63 +8,63 @@ import minioClient from "../file.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/addproduct/:shop", upload.array("image", 3), async (req, res) => {
-	const shop = req.params.shop;
-	const { name, price, description, category, amount } = req.body;
-	const images = req.files;
-	console.log(images, "Desde multer");
-	try {
-		// if (req.isAuthenticated()) {
-		// 	if (req.user.role == "Admin") {
-		// 	} else {
-		// 		res.status(403).send("No está autorizado para ver esta página");
-		// 	}
-		// } else {
-		// 	res.status(403).send("Debe loguearse para ver esta página");
-		// }
-		const imageUploadPromises = images.map((image) => {
-			const imagePath = image.originalname;
-			const imageBuffer = image.buffer;
-			const imageType = image.mimetype;
+router.post(
+	"/addproduct/:shop",
+	upload.array("images", 3),
+	async (req, res) => {
+		const shop = req.params.shop;
+		const { name, price, description, category, amount } = req.body;
+		const images = req.files;
+		try {
+			// if (req.isAuthenticated()) {
+			// 	if (req.user.role == "Admin") {
+			// 	} else {
+			// 		res.status(403).send("No está autorizado para ver esta página");
+			// 	}
+			// } else {
+			// 	res.status(403).send("Debe loguearse para ver esta página");
+			// }
+			const imageUploadPromises = images.map((image) => {
+				const imagePath = image.originalname;
+				const imageBuffer = image.buffer;
+				const imageType = image.mimetype;
 
-			return new Promise((resolve, reject) => {
-				minioClient.putObject(
-					"propaganda",
-					imagePath,
-					imageBuffer,
-					imageType,
-					function (err, etag) {
-						if (err) {
-							reject(err);
-						} else {
-							const imageUrl = `https://your-minio-server.com/propaganda/${imagePath}`;
-							resolve(imageUrl);
-						}
-					},
-				);
+				return new Promise((resolve, reject) => {
+					minioClient.putObject(
+						"propaganda",
+						imagePath,
+						imageBuffer,
+						imageType,
+						function (err, etag) {
+							if (err) {
+								reject(err);
+							} else {
+								const imageUrl = `https://your-minio-server.com/propaganda/${imagePath}`;
+								resolve(imageUrl);
+							}
+						},
+					);
+				});
 			});
-		});
 
-		const imagePaths = await Promise.all(imageUploadPromises);
-		console.log(imagePaths, "desde minio");
-		const newProduct = new Products({
-			shop,
-			name,
-			price,
-			description,
-			category,
-			amount,
-			images: [...imagePaths],
-		});
-		console.log(newProduct, "desde el newProduct");
-		const a = await newProduct.save();
-		console.log(a, "desde el save");
-		res.status(200).send("Producto añadido correctamente");
-	} catch (error) {
-		console.log(error);
-		res.status(500).send("Error al guardar el producto");
-	}
-});
+			const imagePaths = await Promise.all(imageUploadPromises);
+			const newProduct = new Products({
+				shop,
+				name,
+				price,
+				description,
+				category,
+				amount,
+				images: [...imagePaths],
+			});
+			await newProduct.save();
+			res.status(200).send("Producto añadido correctamente");
+		} catch (error) {
+			console.log(error);
+			res.status(500).send("Error al guardar el producto");
+		}
+	},
+);
 //show the view edit a product
 router.get("/editproduct/:id", async (req, res) => {
 	const id = req.params.id;
@@ -202,13 +202,12 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 //get all products
 router.get("/products/:shop", async (req, res) => {
 	const shop = req.params.shop;
-	const products = await Products.find({ shop }, (err) => {
-		if (err) {
-			console.log(err);
-		} else {
-			res.status(200).json({ products });
-		}
-	});
+	const products = await Products.find({ shop });
+	if (products) {
+		res.status(200).json({ products });
+	} else {
+		res.status(404).send("No se encontraron productos");
+	}
 });
 
 //assesment a product
