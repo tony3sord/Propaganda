@@ -17,6 +17,14 @@ router.post("/addcontact/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	const { gmail, phone, facebook, messenger } = req.body;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		const newContact = new Contact({
 			shop,
 			gmail,
@@ -36,6 +44,14 @@ router.patch("/editcontact/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	const { gmail, phone, facebook, messenger } = req.body;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		await Contact.findOneAndUpdate(
 			{ shop },
 			{ gmail, phone, facebook, messenger },
@@ -50,6 +66,14 @@ router.patch("/editcontact/:shop", async (req, res) => {
 router.delete("/removecontact/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		await Contact.findOneAndDelete({ shop });
 		res.status(200).send("Contact deleted successfully");
 	} catch (error) {

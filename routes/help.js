@@ -17,6 +17,14 @@ router.post("/addhelp/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	const { help } = req.body;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		const newHelp = new Help({
 			shop,
 			help,
@@ -33,6 +41,14 @@ router.patch("/edithelp/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	const { help } = req.body;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		await Help.findOneAndUpdate({ shop }, { help });
 		res.status(200).send("Help edited successfully");
 	} catch (error) {
@@ -44,6 +60,14 @@ router.patch("/edithelp/:shop", async (req, res) => {
 router.delete("/deletehelp/:shop", async (req, res) => {
 	const shop = req.params.shop;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		await Help.findOneAndDelete({ shop });
 		res.status(200).send("Help deleted successfully");
 	} catch (error) {

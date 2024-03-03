@@ -14,6 +14,14 @@ router.post("/addproduct/:shop", upload.array("image", 3), async (req, res) => {
 	const images = req.files;
 	console.log(images, "Desde multer");
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		const imageUploadPromises = images.map((image) => {
 			const imagePath = image.originalname;
 			const imageBuffer = image.buffer;
@@ -92,6 +100,14 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 	const images = req.files;
 
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		const product = await Products.findById(req.params.id);
 		if (!product) {
 			return res.status(404).send("Producto no encontrado");
@@ -152,7 +168,7 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 router.delete("/deleteproduct/:id", async (req, res) => {
 	try {
 		// if (req.isAuthenticated()) {
-		// 	if (req.user.role == "admin") {
+		// 	if (req.user.role == "Admin") {
 		// 		res.status(200).send("Producto eliminado correctamente");
 		// 	} else {
 		// 		res.status(403).send("No tiene permisos para eliminar el producto");

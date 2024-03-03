@@ -3,16 +3,25 @@ const router = express.Router();
 import Category from "../models/category.js";
 
 //Json for send category
-router.get("/allcategory", async (req, res) => {
-	const category = await Category.find();
-	res.json({ category });
+router.get("/allcategory/:shop", async (req, res) => {
+	const shop = req.params.shop;
+	const category = await Category.findOne({ shop });
+	res.status(200).json({ category });
 });
 
 //delete category
-router.delete("/removecategory/:id", async (req, res) => {
-	const id = req.params.id;
+router.delete("/removecategory/:shop/:id", async (req, res) => {
+	const { id, shop } = req.params;
 	try {
-		await Category.findByIdAndDelete(id);
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
+		await Category.findOneAndDelete({ id, shop });
 		res.status(200).send("Category deleted successfully");
 	} catch (error) {
 		console.log(error);
@@ -20,11 +29,43 @@ router.delete("/removecategory/:id", async (req, res) => {
 	}
 });
 
-//edit category
-router.patch("/editcategory/:id", async (req, res) => {
-	const { name } = req.body;
+router.get("/editcategory/:shop/:id", async (req, res) => {
+	const { id, shop } = req.params;
 	try {
-		await Category.findByIdAndUpdate(req.params.id, {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
+		const category = await Category.find({ id, shop });
+		if (category) {
+			res.status(200).json({ category });
+		} else {
+			res.status(404).send("No category found");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Server error");
+	}
+});
+
+//edit category
+router.patch("/editcategory/:shop/:id", async (req, res) => {
+	const { name } = req.body;
+	const { shop, id } = req.params;
+	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
+		await Category.findOneAndUpdate(id, shop, {
 			name,
 		});
 		res.status(200).send("Category edited successfully");
@@ -35,11 +76,20 @@ router.patch("/editcategory/:id", async (req, res) => {
 });
 
 //add category
-router.post("/addcategory", async (req, res) => {
+router.post("/addcategory/:shop", async (req, res) => {
 	const { name } = req.body;
-	console.log(name);
+	const shop = req.params.shop;
 	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Admin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
 		const newCategory = new Category({
+			shop,
 			name,
 		});
 		await newCategory.save();
