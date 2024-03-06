@@ -14,7 +14,7 @@ router.get("/shops", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		const shops = await Shop.find();
-		res.status(200).json({ shops });
+		res.json({ shops });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
@@ -41,12 +41,18 @@ router.get("/shops/:id", async (req, res) => {
 });
 
 router.post("/addshop", async (req, res) => {
-	const { name, user, nameadmin, password } = req.body;
-	const este = {
-		name: nameadmin,
-		user,
+	const { name, nameuser, nameadmin, password, province, direction } = req.body;
+	const user = {
+		name: nameuser,
+		user: nameadmin,
 		password,
 		role: "Admin",
+	};
+	const shop = {
+		name,
+		user,
+		province,
+		direction,
 	};
 	try {
 		// if (req.isAuthenticated()) {
@@ -57,8 +63,8 @@ router.post("/addshop", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		await User.findOneAndUpdate({ user: este.user }, este, { upsert: true });
-		const newShop = new Shop({ name, este });
+		await User.findOneAndUpdate({ user }, user, { upsert: true });
+		const newShop = new Shop({ shop });
 		await newShop.save();
 		res.status(200).send("Tienda Creada Correctamente");
 	} catch (error) {
@@ -69,12 +75,18 @@ router.post("/addshop", async (req, res) => {
 
 router.patch("/editshop/:id", async (req, res) => {
 	const id = req.params.id;
-	const { name, user, nameadmin, password } = req.body;
-	const este = {
-		name: nameadmin,
-		user,
+	const { name, nameuser, nameadmin, password, province, direction } = req.body;
+	const user = {
+		name: nameuser,
+		user: nameadmin,
 		password,
 		role: "Admin",
+	};
+	const shop = {
+		name,
+		user,
+		province,
+		direction,
 	};
 	try {
 		// if (req.isAuthenticated()) {
@@ -85,8 +97,8 @@ router.patch("/editshop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		await User.findOneAndUpdate({ user: este.user }, este, { upsert: true });
-		await Shop.findOneAndUpdate({ id }, { name, este });
+		await User.findOneAndUpdate({ user }, user, { upsert: true });
+		await Shop.findOneAndUpdate({ id }, { shop });
 		res.status(200).send("Tienda Editada Correctamente");
 	} catch (error) {
 		console.log(error);
@@ -105,6 +117,8 @@ router.delete("/deleteshop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
+		const shop = await Shop.findById(id);
+		await User.findByIdAndDelete(shop.user);
 		await Shop.findByIdAndDelete(id);
 		res.status(200).send("Tienda Eliminada Correctamente");
 	} catch (error) {

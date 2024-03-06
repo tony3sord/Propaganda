@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import Products from "../models/products.js";
 import multer from "multer";
-import path from "path";
 import Opinion from "../models/opnion.js";
 import minioClient from "../file.js";
 
@@ -308,9 +307,10 @@ router.delete("/deleteopinionproduct/:id", async (req, res) => {
 });
 
 //get the most sold products
-router.get("/mostsellers", async (req, res) => {
+router.get("/mostsellers/:shop", async (req, res) => {
+	const { shop } = req.params;
 	try {
-		const products = await Products.find().sort({ amount: -1 }).limit(5);
+		const products = await Products.find(shop).sort({ amount: -1 }).limit(5);
 		res.status(200).json({ products });
 	} catch (error) {
 		console.log(error);
@@ -319,9 +319,10 @@ router.get("/mostsellers", async (req, res) => {
 });
 
 //get the most expensive products
-router.get("/recents", async (req, res) => {
+router.get("/recents/:shop", async (req, res) => {
+	const { shop } = req.params;
 	try {
-		const recentProducts = await Products.find()
+		const recentProducts = await Products.find(shop)
 			.sort({ createdAt: -1 })
 			.limit(5);
 		res.status(200).json({ recentProducts });
@@ -332,15 +333,66 @@ router.get("/recents", async (req, res) => {
 });
 
 //Product updated recently
-router.get("/updateproducts", async (req, res) => {
+router.get("/updateproducts/:shop", async (req, res) => {
+	const { shop } = req.params;
 	try {
-		const updateProducts = await Products.find()
+		const updateProducts = await Products.find({ shop })
 			.sort({ updateAt: -1 })
 			.limit(5);
 		res.status(200).json({ updateProducts });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error del servidor");
+	}
+});
+
+//Filter for category
+router.get("/product/:shop/:category", async (req, res) => {
+	const { shop, category } = req.params;
+	try {
+		const products = await Products.find({ shop, category });
+		if (products) {
+			res.status(200).json(products);
+		} else {
+			res.status(404).send("No hay productos de esta categoría");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+//Filter for material
+router.get("/product/:shop/:material", async (req, res) => {
+	const { shop, material } = req.params;
+	try {
+		const products = await Products.find({ shop, material });
+		if (products) {
+			res.status(200).json(products);
+		} else {
+			res.status(404).send("No hay productos de este material");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+//Filter for category and material
+router.get("/product/:shop/:category/:material", async (req, res) => {
+	const { shop, category, material } = req.params;
+	try {
+		const products = await Products.find({ shop, category, material });
+		if (products) {
+			res.status(200).json(products);
+		} else {
+			res
+				.status(404)
+				.send("No hay productos de esta categoría y de este material");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
 	}
 });
 

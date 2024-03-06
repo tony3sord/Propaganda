@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-import category from "./category.js";
+import Category from "./category.js";
 import Shop from "./shop.js";
+import Material from "./material.js";
 
 const ProductsSchema = new mongoose.Schema(
 	{
@@ -10,8 +11,12 @@ const ProductsSchema = new mongoose.Schema(
 		images: [String],
 		description: String,
 		category: {
-			type: mongoose.Schema.Types.Mixed,
-			ref: category,
+			type: mongoose.Schema.Types.ObjectId,
+			ref: Category,
+		},
+		material: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: Material,
 		},
 		amount: Number,
 		sales: Number,

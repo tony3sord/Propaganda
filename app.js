@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const app = express();
 import session from "express-session";
 import cors from "cors";
+import morgan from "morgan";
 
 //Import Routes
 import userRoutes from "./routes/user.js";
@@ -27,7 +28,9 @@ app.use(express.json());
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
 const bd_connetion = process.env.BD_CONNETION;
-const CORS = process.env.CORS;
+// const CORS = process.env.CORS;
+
+app.use(morgan("combined"));
 
 app.use(
 	session({
@@ -67,14 +70,14 @@ async function main() {
 	}
 }
 
-app.use(
-	cors({
-		origin: CORS,
-	}),
-);
+app.use(cors());
 
 app.listen(PORT, () => {
 	console.log(`Server Active, port: ${PORT}`);
+});
+
+app.get("/", (req, res) => {
+	res.send("Welcome to the API of the store");
 });
 
 export default app;
