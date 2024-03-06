@@ -1,4 +1,4 @@
-const { Client } = import("minio");
+import { Client }  from ("minio");
 
 const accessKey = process.env.MINIO_ACCESS_KEY;
 const secretKey = process.env.MINIO_SECRET_KEY;
