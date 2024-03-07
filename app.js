@@ -27,7 +27,6 @@ app.use(express.json());
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
 const bd_connetion = process.env.BD_CONNETION;
-// const CORS = process.env.CORS;
 
 app.use(
 	session({
@@ -44,6 +43,14 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+const CORS = process.env.CORS;
+const corsOptions = {
+	origin: CORS,
+	optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 app.use("/user", userRoutes);
 app.use("/product", productRoutes);
@@ -66,8 +73,6 @@ async function main() {
 		console.error("Error to the connect with MongoDB:", error);
 	}
 }
-
-app.use(cors());
 
 app.listen(PORT, () => {
 	console.log(`Server Active, port: ${PORT}`);

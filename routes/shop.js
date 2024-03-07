@@ -14,7 +14,7 @@ router.get("/shops", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		const shops = await Shop.find();
-		res.json({ shops });
+		res.json(shops);
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
