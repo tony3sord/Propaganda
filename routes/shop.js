@@ -14,7 +14,7 @@ router.get("/shops", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		const shops = await Shop.find();
-		res.json(shops);
+		res.status(200).json(shops);
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
@@ -121,6 +121,25 @@ router.delete("/deleteshop/:id", async (req, res) => {
 		await User.findByIdAndDelete(shop.user);
 		await Shop.findByIdAndDelete(id);
 		res.status(200).send("Tienda Eliminada Correctamente");
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+router.get("/adminshops", async (req, res) => {
+	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Superadmin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
+		const shops = await Shop.find().populate("user");
+		const admins = shops.map((shop) => shop.user);
+		res.status(200).json(admins);
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");

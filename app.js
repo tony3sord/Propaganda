@@ -4,6 +4,7 @@ const app = express();
 import session from "express-session";
 import cors from "cors";
 
+app.use(cors());
 //Import Routes
 import userRoutes from "./routes/user.js";
 import productRoutes from "./routes/product.js";
@@ -43,14 +44,6 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-const CORS = process.env.CORS;
-const corsOptions = {
-	origin: CORS,
-	optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
 
 app.use("/user", userRoutes);
 app.use("/product", productRoutes);
