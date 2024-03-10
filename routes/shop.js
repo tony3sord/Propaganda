@@ -13,16 +13,30 @@ router.get("/shops", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shops = await Shop.find();
-		res.status(200).json(shops);
+		const shops = await Shop.find({}, { _id: 0, __v: 0 }).populate("admin", {
+			_id: 0,
+			password: 0,
+			role: 0,
+			email: 0,
+			user: 0,
+			__v: 0,
+		});
+		const shopsTransformed = shops.map((shop) => ({
+			Nombre: shop.name,
+			Provincia: shop.province,
+			Administrador: shop.admin.name,
+		}));
+		res.status(200).json(shopsTransformed);
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		if (!res.headersSent) {
+			res.status(500).send("Error en el servidor");
+		}
 	}
 });
 
 router.get("/shops/:id", async (req, res) => {
-	const id = req.params.id;
+	const id = req.params;
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Superadmin") {
@@ -33,7 +47,37 @@ router.get("/shops/:id", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		const shop = await Shop.findbyid(id);
-		res.json({ shop });
+		res.json(shop);
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+router.get("/shopsname/:name", async (req, res) => {
+	const { name } = req.params;
+	try {
+		// if (req.isAuthenticated()) {
+		// 	if (req.user.role == "Superadmin") {
+		// 	} else {
+		// 		res.status(403).send("No está autorizado para ver esta página");
+		// 	}
+		// } else {
+		// 	res.status(403).send("Debe loguearse para ver esta página");
+		// }
+		const shop = await Shop.findOne({ name }, { _id: 0, __v: 0 }).populate(
+			"admin",
+			{ _id: 0, role: 0, __v: 0 },
+		);
+		const objeto = {
+			nombre: shop.name,
+			administrador: shop.admin.name,
+			usuario: shop.admin.user,
+			correo: shop.admin.email,
+			contrasena: shop.admin.password,
+			provincia: shop.province,
+		};
+		res.json(objeto);
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
@@ -41,18 +85,21 @@ router.get("/shops/:id", async (req, res) => {
 });
 
 router.post("/addshop", async (req, res) => {
-	const { name, nameuser, nameadmin, password, province, direction } = req.body;
-	const user = {
-		name: nameuser,
-		user: nameadmin,
-		password,
-		role: "Admin",
-	};
-	const shop = {
-		name,
-		user,
-		province,
+	const {
+		nombre,
+		administrador,
+		usuario,
+		correo,
+		contrasena,
+		provincia,
 		direction,
+	} = req.body;
+	const user = {
+		name: administrador,
+		user: usuario,
+		email: correo,
+		password: contrasena,
+		role: "Admin",
 	};
 	try {
 		// if (req.isAuthenticated()) {
@@ -63,9 +110,17 @@ router.post("/addshop", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		await User.findOneAndUpdate({ user }, user, { upsert: true });
-		const newShop = new Shop({ shop });
-		await newShop.save();
+		const a = await User.findOneAndUpdate({ user: usuario }, user, {
+			upsert: true,
+			new: true,
+		});
+		const shop = {
+			name: nombre,
+			admin: a,
+			province: provincia,
+			direction,
+		};
+		await Shop.create(shop);
 		res.status(200).send("Tienda Creada Correctamente");
 	} catch (error) {
 		console.log(error);
@@ -73,20 +128,25 @@ router.post("/addshop", async (req, res) => {
 	}
 });
 
-router.patch("/editshop/:id", async (req, res) => {
-	const id = req.params.id;
-	const { name, nameuser, nameadmin, password, province, direction } = req.body;
+router.patch("/editshop/:name", async (req, res) => {
+	const id = req.params.name;
+	console.log(id);
+	const {
+		nombre,
+		administrador,
+		usuario,
+		correo,
+		contrasena,
+		provincia,
+		direccion,
+	} = req.body;
+	console.log(req.body, "desde el body");
 	const user = {
-		name: nameuser,
-		user: nameadmin,
-		password,
+		name: administrador,
+		user: usuario,
+		email: correo,
+		password: contrasena,
 		role: "Admin",
-	};
-	const shop = {
-		name,
-		user,
-		province,
-		direction,
 	};
 	try {
 		// if (req.isAuthenticated()) {
@@ -97,9 +157,23 @@ router.patch("/editshop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		await User.findOneAndUpdate({ user }, user, { upsert: true });
-		await Shop.findOneAndUpdate({ id }, { shop });
-		res.status(200).send("Tienda Editada Correctamente");
+		const a = await User.findOneAndUpdate({ user: usuario }, user, {
+			upsert: true,
+			new: true,
+		});
+		const shop = {
+			name: nombre,
+			admin: a,
+			province: provincia,
+			direction: direccion,
+		};
+		const b = await Shop.findOneAndUpdate({ name: id }, { shop });
+		console.log(b);
+		if (a) {
+			res.status(200).send("Tienda Editada Correctamente");
+		} else {
+			res.status(400).send("No se pudo editar la tienda");
+		}
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
@@ -137,9 +211,16 @@ router.get("/adminshops", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shops = await Shop.find().populate("user");
-		const admins = shops.map((shop) => shop.user);
-		res.status(200).json(admins);
+		const shops = await Shop.find({}, { __v: 0, _id: 0, province: 0 }).populate(
+			"admin",
+			{ _id: 0, __v: 0, password: 0, role: 0, email: 0 },
+		);
+		const shopsTransformed = shops.map((shop) => ({
+			Nombre: shop.admin.name,
+			Usuario: shop.admin.user,
+			Tienda: shop.name,
+		}));
+		res.status(200).json(shopsTransformed);
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");
