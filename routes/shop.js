@@ -56,6 +56,7 @@ router.get("/shops/:id", async (req, res) => {
 
 router.get("/shopsname/:name", async (req, res) => {
 	const { name } = req.params;
+	console.log(name);
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Superadmin") {
@@ -69,6 +70,7 @@ router.get("/shopsname/:name", async (req, res) => {
 			"admin",
 			{ _id: 0, role: 0, __v: 0 },
 		);
+		console.log(shop);
 		const objeto = {
 			nombre: shop.name,
 			administrador: shop.admin.name,
@@ -128,9 +130,9 @@ router.post("/addshop", async (req, res) => {
 	}
 });
 
-router.patch("/editshop/:name", async (req, res) => {
-	const id = req.params.name;
-	console.log(id);
+router.patch("/editshop/:id/:adminviejo", async (req, res) => {
+	const { id, adminviejo } = req.params;
+	console.log(id, "name");
 	const {
 		nombre,
 		administrador,
@@ -140,7 +142,6 @@ router.patch("/editshop/:name", async (req, res) => {
 		provincia,
 		direccion,
 	} = req.body;
-	console.log(req.body, "desde el body");
 	const user = {
 		name: administrador,
 		user: usuario,
@@ -157,19 +158,20 @@ router.patch("/editshop/:name", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const a = await User.findOneAndUpdate({ user: usuario }, user, {
+		const a = await User.findOneAndUpdate({ user: adminviejo }, user, {
 			upsert: true,
 			new: true,
 		});
+
 		const shop = {
 			name: nombre,
 			admin: a,
 			province: provincia,
 			direction: direccion,
 		};
-		const b = await Shop.findOneAndUpdate({ name: id }, { shop });
-		console.log(b);
-		if (a) {
+		const b = await Shop.findOneAndUpdate({ name: id }, shop);
+
+		if (a && b) {
 			res.status(200).send("Tienda Editada Correctamente");
 		} else {
 			res.status(400).send("No se pudo editar la tienda");
@@ -181,20 +183,15 @@ router.patch("/editshop/:name", async (req, res) => {
 });
 
 router.delete("/deleteshop/:id", async (req, res) => {
-	const id = req.params;
+	const { id } = req.params;
 	try {
-		// if (req.isAuthenticated()) {
-		// 	if (req.user.role == "Superadmin") {
-		// 	} else {
-		// 		res.status(403).send("No está autorizado para ver esta página");
-		// 	}
-		// } else {
-		// 	res.status(403).send("Debe loguearse para ver esta página");
-		// }
-		const shop = await Shop.findById(id);
-		await User.findByIdAndDelete(shop.user);
-		await Shop.findByIdAndDelete(id);
-		res.status(200).send("Tienda Eliminada Correctamente");
+		const shop = await Shop.findOne({ name: id });
+		if (shop) {
+			await shop.deleteOne();
+			res.status(200).send("Tienda Eliminada Correctamente");
+		} else {
+			res.status(400).send("Error al eliminar la Tienda");
+		}
 	} catch (error) {
 		console.log(error);
 		res.status(500).send("Error en el servidor");

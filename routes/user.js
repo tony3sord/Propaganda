@@ -122,4 +122,64 @@ router.get(
 	},
 );
 
+router.delete("/deleteuser/:user", async (req, res) => {
+	const { user } = req.params;
+	try {
+		const deleteUser = await User.deleteOne({ user });
+		if (deleteUser) {
+			res.status(200).send("Usuario eliminado correctamente");
+		} else {
+			res.status(404).send("Usuario no encontrado");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+router.get("/user/:user", async (req, res) => {
+	const user = req.params.user;
+	console.log(user);
+	try {
+		const a = await User.findOne({ user }, { _id: 0, __v: 0 });
+		console.log(a);
+		if (a) {
+			const b = {
+				Nombre: a.name,
+				Correo: a.email,
+				Usuario: a.user,
+				Contraseña: a.password,
+			};
+			res.json(b);
+		} else {
+			res.status(404).send("Usuario no encontrado");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
+router.patch("/updateuser/:user", async (req, res) => {
+	const user = req.params.user;
+	const { nombre, correo, contrasena, nombreusuario } = req.body;
+	try {
+		const a = {
+			name: nombre,
+			email: correo,
+			user: nombreusuario,
+			password: contrasena,
+		};
+		const b = await User.findOneAndUpdate({ user }, a);
+		if (b) {
+			res.status(200).send("Usuario actualizado correctamente");
+		} else {
+			res.status(404).send("Usuario no encontrado");
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(500).send("Error en el servidor");
+	}
+});
+
 export default router;
