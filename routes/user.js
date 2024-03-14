@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
 import User from "../models/users.js";
+import Shop from "../models/shop.js";
 
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -122,12 +123,17 @@ router.get(
 	},
 );
 
-router.delete("/deleteuser/:user", async (req, res) => {
-	const { user } = req.params;
+router.delete("/deleteuser/:id", async (req, res) => {
+	const { id } = req.params;
 	try {
-		const deleteUser = await User.deleteOne({ user });
-		if (deleteUser) {
-			res.status(200).send("Usuario eliminado correctamente");
+		const user = await User.findById(id);
+		if (user) {
+			const deleteUser = await User.deleteOne({ user });
+			if (deleteUser) {
+				res.status(200).send("Usuario eliminado correctamente");
+			} else {
+				res.status(400).send("Error al eliminar el usuario");
+			}
 		} else {
 			res.status(404).send("Usuario no encontrado");
 		}
@@ -137,18 +143,32 @@ router.delete("/deleteuser/:user", async (req, res) => {
 	}
 });
 
-router.get("/user/:user", async (req, res) => {
-	const user = req.params.user;
-	console.log(user);
+router.get("/user/:id", async (req, res) => {
+	const id = req.params.id;
+	console.log(id);
 	try {
-		const a = await User.findOne({ user }, { _id: 0, __v: 0 });
+		const a = await User.findById(id, { __v: 0 });
+		let b;
 		console.log(a);
 		if (a) {
-			const b = {
-				Nombre: a.name,
-				Correo: a.email,
-				Usuario: a.user,
-				Contraseña: a.password,
+			if (a.role == "Admin") {
+				const shop = await Shop.findOne({ admin: a });
+				console.log(shop);
+				b = {
+					id: a._id,
+					nombre: a.name,
+					correo: a.email,
+					usuario: a.user,
+					contrasena: a.password,
+					tienda: shop.name,
+				};
+			}
+			b = {
+				id: a._id,
+				nombre: a.name,
+				correo: a.email,
+				usuario: a.user,
+				contrasena: a.password,
 			};
 			res.json(b);
 		} else {

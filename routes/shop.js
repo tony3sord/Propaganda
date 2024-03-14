@@ -13,7 +13,7 @@ router.get("/shops", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shops = await Shop.find({}, { _id: 0, __v: 0 }).populate("admin", {
+		const shops = await Shop.find({}, { __v: 0 }).populate("admin", {
 			_id: 0,
 			password: 0,
 			role: 0,
@@ -22,6 +22,7 @@ router.get("/shops", async (req, res) => {
 			__v: 0,
 		});
 		const shopsTransformed = shops.map((shop) => ({
+			id: shop._id,
 			Nombre: shop.name,
 			Provincia: shop.province,
 			Administrador: shop.admin.name,
@@ -54,9 +55,8 @@ router.get("/shops/:id", async (req, res) => {
 	}
 });
 
-router.get("/shopsname/:name", async (req, res) => {
-	const { name } = req.params;
-	console.log(name);
+router.get("/shopsname/:id", async (req, res) => {
+	const { id } = req.params;
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Superadmin") {
@@ -66,12 +66,13 @@ router.get("/shopsname/:name", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shop = await Shop.findOne({ name }, { _id: 0, __v: 0 }).populate(
-			"admin",
-			{ _id: 0, role: 0, __v: 0 },
-		);
-		console.log(shop);
+		const shop = await Shop.findOne({ _id: id }, { __v: 0 }).populate("admin", {
+			_id: 0,
+			role: 0,
+			__v: 0,
+		});
 		const objeto = {
+			id: shop._id,
 			nombre: shop.name,
 			administrador: shop.admin.name,
 			usuario: shop.admin.user,
@@ -79,6 +80,7 @@ router.get("/shopsname/:name", async (req, res) => {
 			contrasena: shop.admin.password,
 			provincia: shop.province,
 		};
+		console.log(objeto);
 		res.json(objeto);
 	} catch (error) {
 		console.log(error);
@@ -169,8 +171,8 @@ router.patch("/editshop/:id/:adminviejo", async (req, res) => {
 			province: provincia,
 			direction: direccion,
 		};
-		const b = await Shop.findOneAndUpdate({ name: id }, shop);
-
+		const b = await Shop.findOneAndUpdate({ _id: id }, shop);
+		console.log(b);
 		if (a && b) {
 			res.status(200).send("Tienda Editada Correctamente");
 		} else {
@@ -185,7 +187,7 @@ router.patch("/editshop/:id/:adminviejo", async (req, res) => {
 router.delete("/deleteshop/:id", async (req, res) => {
 	const { id } = req.params;
 	try {
-		const shop = await Shop.findOne({ name: id });
+		const shop = await Shop.findById(id);
 		if (shop) {
 			await shop.deleteOne();
 			res.status(200).send("Tienda Eliminada Correctamente");
@@ -210,9 +212,10 @@ router.get("/adminshops", async (req, res) => {
 		// }
 		const shops = await Shop.find({}, { __v: 0, _id: 0, province: 0 }).populate(
 			"admin",
-			{ _id: 0, __v: 0, password: 0, role: 0, email: 0 },
+			{ __v: 0, password: 0, role: 0, email: 0 },
 		);
 		const shopsTransformed = shops.map((shop) => ({
+			id: shop.admin._id,
 			Nombre: shop.admin.name,
 			Usuario: shop.admin.user,
 			Tienda: shop.name,
