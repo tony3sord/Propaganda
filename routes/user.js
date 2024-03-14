@@ -153,7 +153,7 @@ router.get("/user/:id", async (req, res) => {
 		if (a) {
 			if (a.role == "Admin") {
 				const shop = await Shop.findOne({ admin: a });
-				console.log(shop);
+				console.log(shop.name);
 				b = {
 					id: a._id,
 					nombre: a.name,
@@ -162,14 +162,15 @@ router.get("/user/:id", async (req, res) => {
 					contrasena: a.password,
 					tienda: shop.name,
 				};
+			} else {
+				b = {
+					id: a._id,
+					nombre: a.name,
+					correo: a.email,
+					usuario: a.user,
+					contrasena: a.password,
+				};
 			}
-			b = {
-				id: a._id,
-				nombre: a.name,
-				correo: a.email,
-				usuario: a.user,
-				contrasena: a.password,
-			};
 			res.json(b);
 		} else {
 			res.status(404).send("Usuario no encontrado");
@@ -180,17 +181,31 @@ router.get("/user/:id", async (req, res) => {
 	}
 });
 
-router.patch("/updateuser/:user", async (req, res) => {
-	const user = req.params.user;
-	const { nombre, correo, contrasena, nombreusuario } = req.body;
+router.patch("/updateuser/:id", async (req, res) => {
+	const id = req.params.id;
+	const { nombre, correo, contrasena, usuario, tienda } = req.body;
+	let a;
 	try {
-		const a = {
-			name: nombre,
-			email: correo,
-			user: nombreusuario,
-			password: contrasena,
-		};
-		const b = await User.findOneAndUpdate({ user }, a);
+		if (tienda) {
+			const shop = await Shop.findOne({ name: tienda });
+			if (shop) {
+				a = {
+					name: nombre,
+					email: correo,
+					user: usuario,
+					password: contrasena,
+					role: "Admin",
+				};
+			}
+		} else {
+			a = {
+				name: nombre,
+				email: correo,
+				user: nombreusuario,
+				password: contrasena,
+			};
+		}
+		const b = await User.findByIdAndUpdate(id, a);
 		if (b) {
 			res.status(200).send("Usuario actualizado correctamente");
 		} else {

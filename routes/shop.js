@@ -13,14 +13,16 @@ router.get("/shops", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shops = await Shop.find({}, { __v: 0 }).populate("admin", {
-			_id: 0,
-			password: 0,
-			role: 0,
-			email: 0,
-			user: 0,
-			__v: 0,
-		});
+		const shops = await Shop.find({}, { __v: 0 })
+			.populate("admin", {
+				_id: 0,
+				password: 0,
+				role: 0,
+				email: 0,
+				user: 0,
+				__v: 0,
+			})
+			.sort({ _id: -1 });
 		const shopsTransformed = shops.map((shop) => ({
 			id: shop._id,
 			Nombre: shop.name,
@@ -210,10 +212,9 @@ router.get("/adminshops", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const shops = await Shop.find({}, { __v: 0, _id: 0, province: 0 }).populate(
-			"admin",
-			{ __v: 0, password: 0, role: 0, email: 0 },
-		);
+		const shops = await Shop.find({}, { __v: 0, _id: 0, province: 0 })
+			.populate("admin", { __v: 0, password: 0, role: 0, email: 0 })
+			.sort({ _id: -1 });
 		const shopsTransformed = shops.map((shop) => ({
 			id: shop.admin._id,
 			Nombre: shop.admin.name,
