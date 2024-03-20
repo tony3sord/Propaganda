@@ -72,31 +72,31 @@ router.post("/register", async (req, res) => {
 		const validate_email = await User.findOne({ email });
 		const validate_user = await User.findOne({ user });
 		if (validate_email || validate_user) {
-			res.status(409).send("email o usuario ya registrado");
+			return res.status(409).send("email o usuario ya registrado");
 		} else {
 			const newUser = new User({ name, email, user, password, role: "client" });
 			await newUser.save();
-			res.status(200).json({ user: newUser });
+			return res.status(200).json({ user: newUser });
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send(error);
+		return res.status(500).send(error);
 	}
 });
 
 //logout
 router.post("/logout", (req, res) => {
 	req.logout();
-	res.status(200).send("Se ha cerrado la sesión correctamente");
+	return res.status(200).send("Se ha cerrado la sesión correctamente");
 });
 
 //get the current user
 router.get("/currentuser", (req, res) => {
 	if (req.isAuthenticated()) {
 		const currentuser = req.user;
-		res.json({ currentuser });
+		return res.json(currentuser);
 	} else {
-		res.status(401).send("No hay usuario logueado");
+		return res.status(401).send("No hay usuario logueado");
 	}
 });
 
@@ -109,7 +109,7 @@ router.post("/login", function (req, res, next) {
 		if (!user) {
 			return res.status(401).json(info);
 		}
-		res.status(200).json({ user });
+		return res.status(200).json(user);
 	})(req, res, next);
 });
 
@@ -119,7 +119,7 @@ router.get(
 	passport.authenticate("google", { failureRedirect: "/login" }),
 	(req, res) => {
 		// Successful authentication, redirect home.
-		res.status(200).send("Usuario autenticado correctamente");
+		return res.status(200).send("Usuario autenticado correctamente");
 	},
 );
 
@@ -130,30 +130,27 @@ router.delete("/deleteuser/:id", async (req, res) => {
 		if (user) {
 			const deleteUser = await User.deleteOne({ user });
 			if (deleteUser) {
-				res.status(200).send("Usuario eliminado correctamente");
+				return res.status(200).send("Usuario eliminado correctamente");
 			} else {
-				res.status(400).send("Error al eliminar el usuario");
+				return res.status(400).send("Error al eliminar el usuario");
 			}
 		} else {
-			res.status(404).send("Usuario no encontrado");
+			return res.status(404).send("Usuario no encontrado");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
 router.get("/user/:id", async (req, res) => {
 	const id = req.params.id;
-	console.log(id);
 	try {
 		const a = await User.findById(id, { __v: 0 });
 		let b;
-		console.log(a);
 		if (a) {
 			if (a.role == "Admin") {
 				const shop = await Shop.findOne({ admin: a });
-				console.log(shop.name);
 				b = {
 					id: a._id,
 					nombre: a.name,
@@ -171,13 +168,13 @@ router.get("/user/:id", async (req, res) => {
 					contrasena: a.password,
 				};
 			}
-			res.json(b);
+			return res.json(b);
 		} else {
-			res.status(404).send("Usuario no encontrado");
+			return res.status(404).send("Usuario no encontrado");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -207,13 +204,13 @@ router.patch("/updateuser/:id", async (req, res) => {
 		}
 		const b = await User.findByIdAndUpdate(id, a);
 		if (b) {
-			res.status(200).send("Usuario actualizado correctamente");
+			return res.status(200).send("Usuario actualizado correctamente");
 		} else {
-			res.status(404).send("Usuario no encontrado");
+			return res.status(404).send("Usuario no encontrado");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 

@@ -29,12 +29,10 @@ router.get("/shops", async (req, res) => {
 			Provincia: shop.province,
 			Administrador: shop.admin.name,
 		}));
-		res.status(200).json(shopsTransformed);
+		return res.status(200).json(shopsTransformed);
 	} catch (error) {
 		console.log(error);
-		if (!res.headersSent) {
-			res.status(500).send("Error en el servidor");
-		}
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -50,10 +48,10 @@ router.get("/shops/:id", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		const shop = await Shop.findbyid(id);
-		res.json(shop);
+		return res.json(shop);
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -82,11 +80,10 @@ router.get("/shopsname/:id", async (req, res) => {
 			contrasena: shop.admin.password,
 			provincia: shop.province,
 		};
-		console.log(objeto);
-		res.json(objeto);
+		return res.json(objeto);
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -108,6 +105,10 @@ router.post("/addshop", async (req, res) => {
 		role: "Admin",
 	};
 	try {
+		const ver = await User.findOne({ user: user.user });
+		const ver1 = await User.findOne({ email: user.email });
+		if (ver || ver1)
+			return res.status(400).send("Nombre de usuario o correo existente");
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Superadmin") {
 		// 	} else {
@@ -120,17 +121,22 @@ router.post("/addshop", async (req, res) => {
 			upsert: true,
 			new: true,
 		});
-		const shop = {
+		const shop = new Shop({
 			name: nombre,
 			admin: a,
 			province: provincia,
 			direction,
-		};
+		});
+		const shops = await Shop.findOne({
+			province: shop.province,
+			name: shop.name,
+		});
+		if (shops) return res.status(400).send("Ya esta tienda existe");
 		await Shop.create(shop);
-		res.status(200).send("Tienda Creada Correctamente");
+		return res.status(200).send("Tienda Creada Correctamente");
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -173,16 +179,24 @@ router.patch("/editshop/:id/:adminviejo", async (req, res) => {
 			province: provincia,
 			direction: direccion,
 		};
-		const b = await Shop.findOneAndUpdate({ _id: id }, shop);
-		console.log(b);
-		if (a && b) {
-			res.status(200).send("Tienda Editada Correctamente");
+		const shops = await Shop.findOne({
+			province: shop.province,
+			name: shop.name,
+		});
+		if (shops) {
+			return res.status(400).send("Ya esta tienda existe");
 		} else {
-			res.status(400).send("No se pudo editar la tienda");
+			const b = await Shop.findOneAndUpdate({ _id: id }, shop);
+			console.log(b);
+			if (a && b) {
+				return res.status(200).send("Tienda Editada Correctamente");
+			} else {
+				return res.status(400).send("No se pudo editar la tienda");
+			}
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -192,13 +206,13 @@ router.delete("/deleteshop/:id", async (req, res) => {
 		const shop = await Shop.findById(id);
 		if (shop) {
 			await shop.deleteOne();
-			res.status(200).send("Tienda Eliminada Correctamente");
+			return res.status(200).send("Tienda Eliminada Correctamente");
 		} else {
-			res.status(400).send("Error al eliminar la Tienda");
+			return res.status(400).send("Error al eliminar la Tienda");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -221,10 +235,10 @@ router.get("/adminshops", async (req, res) => {
 			Usuario: shop.admin.user,
 			Tienda: shop.name,
 		}));
-		res.status(200).json(shopsTransformed);
+		return res.status(200).json(shopsTransformed);
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 

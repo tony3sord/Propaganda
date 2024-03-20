@@ -3,10 +3,18 @@ const router = express.Router();
 import Category from "../models/category.js";
 
 //Json for send category
-router.get("/allcategory/:shop", async (req, res) => {
-	const shop = req.params.shop;
-	const category = await Category.findOne({ shop });
-	res.status(200).json({ category });
+router.get("/category/:shop", async (req, res) => {
+	const { shop } = req.params;
+	try {
+		const category = await Category.findOne({ shop });
+		const objeto = category.map((c) => ({
+			Categoría: c.name,
+		}));
+		return res.status(200).json(category);
+	} catch (error) {
+		console.log(error);
+		return res.status(500).send("Error en el servidor");
+	}
 });
 
 //delete category
@@ -22,10 +30,10 @@ router.delete("/removecategory/:shop/:id", async (req, res) => {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
 		await Category.findOneAndDelete({ id, shop });
-		res.status(200).send("Category deleted successfully");
+		return res.status(200).send("Category deleted successfully");
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Server error");
+		return res.status(500).send("Server error");
 	}
 });
 
@@ -40,15 +48,15 @@ router.get("/editcategory/:shop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const category = await Category.find({ id, shop });
+		const category = await Category.findOne({ _id: id, shop });
 		if (category) {
-			res.status(200).json({ category });
+			return res.status(200).json(category);
 		} else {
-			res.status(404).send("No category found");
+			return res.status(404).send("Error al buscar la categoria");
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Server error");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
@@ -65,20 +73,24 @@ router.patch("/editcategory/:shop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		await Category.findOneAndUpdate(id, shop, {
+		const a = await Category.findOneAndUpdate(id, shop, {
 			name,
 		});
-		res.status(200).send("Category edited successfully");
+		if (a) {
+			return res.status(200).send("Categoría editada correctamente");
+		} else {
+			return res.status(403).send("Error al editar la categoría");
+		}
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Server error");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 
 //add category
 router.post("/addcategory/:shop", async (req, res) => {
 	const { name } = req.body;
-	const shop = req.params.shop;
+	const { shop } = req.params;
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Admin") {
@@ -93,10 +105,10 @@ router.post("/addcategory/:shop", async (req, res) => {
 			name,
 		});
 		await newCategory.save();
-		res.status(200).send("Category added successfully");
+		return res.status(200).send("Category added successfully");
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Server error");
+		return res.status(500).send("Server error");
 	}
 });
 

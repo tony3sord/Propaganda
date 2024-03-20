@@ -1,52 +1,37 @@
 {
-	"type": "module",
-	"name": "propaganda-y-eventos",
-	"version": "1.0.0",
-	"description": "Tienda virtual de la Empresa Nacional de Prograganda y Eventos",
-	"main": "app.js",
-	"scripts": {
-		"start": "node app.js",
-		"start-dev": "nodemon app.js",
-		"test": "mocha",
-		"produtcion": "pm2 start ecosystem.config.js"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/tony3sord/Propaganda1.git"
-	},
-	"author": "Darioflo_Tony3sord",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/tony3sord/Propaganda1/issues"
-	},
-	"homepage": "https://github.com/tony3sord/Propaganda1#readme",
-	"dependencies": {
-		"@ngrok/ngrok": "^1.1.0",
-		"bcrypt": "^5.1.1",
-		"cors": "^2.8.5",
-		"dotenv": "^16.4.1",
-		"express": "^4.18.2",
-		"express-session": "^1.17.3",
-		"minio": "^7.1.3",
-		"mongoose": "^8.0.3",
-		"mongoose-bcrypt": "^1.11.0",
-		"morgan": "^1.10.0",
-		"multer": "^1.4.5-lts.1",
-		"passport": "^0.7.0",
-		"passport-google-oauth20": "^2.0.0",
-		"passport-local": "^1.0.0",
-		"pm2": "^5.3.1",
-		"router": "^1.3.8",
-		"routes": "^2.1.0"
-	},
-	"devDependencies": {
-		"axios": "^1.6.7",
-		"chai": "^5.0.0",
-		"form-data": "^4.0.0",
-		"fs": "^0.0.1-security",
-		"mocha": "^10.2.0",
-		"morgan": "^1.10.0",
-		"nodemon": "^3.0.2",
-		"supertest": "^6.3.3"
-	}
+  "name": "propaganda-y-eventos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "start:dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tony3sord/Propaganda.git"
+  },
+  "author": "tony_3sord&darioflo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tony3sord/Propaganda/issues"
+  },
+  "homepage": "https://github.com/tony3sord/Propaganda#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-session": "^1.18.0",
+    "minio": "^7.1.3",
+    "mongoose": "^8.2.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.1.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "router": "^1.3.8"
+  }
 }

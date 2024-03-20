@@ -28,6 +28,7 @@ app.use(express.json());
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
 const bd_connetion = process.env.BD_CONNETION;
+const HOST_MONGO = process.env.HOST_MONGO;
 
 app.use(
 	session({
@@ -57,11 +58,16 @@ app.use("/help", helpRoutes);
 app.use("/promotion", promotionRoutes);
 app.use("/material", materialRoutes);
 
+
 main().catch((err) => console.log(err));
 async function main() {
 	try {
-		mongoose.connect(`mongodb://127.0.0.1/${bd_connetion}`);
-		console.log("MongoDB is Online,now");
+		const a = await mongoose.connect(`mongodb://${HOST_MONGO}/${bd_connetion}`);
+		if(a){
+			console.log("MongoDB is Online,now");
+		}else{
+			console.log("MongoDB is Offline,now");
+		}
 	} catch (error) {
 		console.error("Error to the connect with MongoDB:", error);
 	}
