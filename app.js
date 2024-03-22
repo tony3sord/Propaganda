@@ -17,6 +17,7 @@ import aboutRoutes from "./routes/about.js";
 import helpRoutes from "./routes/help.js";
 import promotionRoutes from "./routes/promotion.js";
 import materialRoutes from "./routes/material.js";
+import informationRoutes from "./routes/information.js";
 
 import passport from "passport";
 import dotenv from "dotenv";
@@ -47,6 +48,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/user", userRoutes);
+app.use("/information", informationRoutes);
 app.use("/product", productRoutes);
 app.use("/category", categoryRoutes);
 app.use("/basket", basketRoutes);
