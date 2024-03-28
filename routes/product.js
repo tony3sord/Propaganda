@@ -1,19 +1,21 @@
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
+import minioClient from "../file.js";
 import express from "express";
 const router = express.Router();
 import Products from "../models/products.js";
-import multer from "multer";
 import Opinion from "../models/opnion.js";
-import minioClient from "../file.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
 	"/addproduct/:shop",
-	upload.array("images", 3),
+	upload.array("fotos", 3),
 	async (req, res) => {
-		const shop = req.params.shop;
-		const { name, price, description, category, amount } = req.body;
-		const images = req.files;
+		const {shop} = req.params;
+		const { nombre, precio, descripcion, categoria, cantidad, material } = req.body;
+		console.log(nombre, precio, descripcion, categoria, cantidad,material);
+		const fotos = req.files;
+		console.log(fotos);
 		try {
 			// if (req.isAuthenticated()) {
 			// 	if (req.user.role == "Admin") {
@@ -23,7 +25,7 @@ router.post(
 			// } else {
 			// 	res.status(403).send("Debe loguearse para ver esta página");
 			// }
-			const imageUploadPromises = images.map((image) => {
+			const imageUploadPromises = fotos.map((image) => {
 				const imagePath = image.originalname;
 				const imageBuffer = image.buffer;
 				const imageType = image.mimetype;
@@ -38,7 +40,7 @@ router.post(
 							if (err) {
 								reject(err);
 							} else {
-								const imageUrl = `https://your-minio-server.com/propaganda/${imagePath}`;
+								const imageUrl = `http://127.0.0.1:9000/buckets/propaganda/${imagePath}`;
 								resolve(imageUrl);
 							}
 						},
@@ -49,18 +51,23 @@ router.post(
 			const imagePaths = await Promise.all(imageUploadPromises);
 			const newProduct = new Products({
 				shop,
-				name,
-				price,
-				description,
-				category,
-				amount,
+				name:nombre,
+				price:precio,
+				description:descripcion,
+				category:categoria,
+				amount:cantidad,
+				material:material,
 				images: [...imagePaths],
 			});
-			await newProduct.save();
-			res.status(200).send("Producto añadido correctamente");
+			const a = await newProduct.save();
+			if(a){
+				return res.status(200).send("Producto añadido correctamente");
+			}else{
+				return res.status(400).send("Error al añadir el producto");
+			}
 		} catch (error) {
 			console.log(error);
-			res.status(500).send("Error al guardar el producto");
+			return res.status(500).send("Error en el servidor");
 		}
 	},
 );
@@ -83,20 +90,19 @@ router.get("/editproduct/:id", async (req, res) => {
 	// }else{
 	//     res.redirect('/login');
 	// }
-	const product = await Products.findById(id, (err, doc) => {
-		if (err) {
-			console.log(err);
-			res.status(404).send("Error al obtener el producto");
+	const product = await Products.findById(id); 
+		if (product) {
+			console.log(product);
+			return res.status(200).send("Producto obtenido correctamente");
 		} else {
-			res.status(200).send("Producto obtenido correctamente").json({ product });
+			return res.status(400).send("Error al obtener el producto");
 		}
-	});
 });
 
 //edit a product
-router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
-	const { name, price, description, category, amount } = req.body;
-	const images = req.files;
+router.patch("/editproduct/:id", upload.array("fotos", 3), async (req, res) => {
+	const { name, price, description, category, amount,material } = req.body;
+	const fotos = req.files;
 
 	try {
 		// if (req.isAuthenticated()) {
@@ -113,7 +119,7 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 		}
 
 		// Borrar las imágenes antiguas
-		const objectsToRemove = product.image.map((imagePath) => ({
+		const objectsToRemove = product.fotos.map((imagePath) => ({
 			name: imagePath,
 		}));
 
@@ -126,7 +132,7 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 
 		// Subir las nuevas imágenes
 		const imagePaths = [];
-		for (let image of images) {
+		for (let image of fotos) {
 			const imagePath = image.path;
 			const imageStream = fs.createReadStream(imagePath);
 			const imageType = image.mimetype;
@@ -154,12 +160,13 @@ router.patch("/editproduct/:id", upload.array("image", 3), async (req, res) => {
 		product.images = imagePaths;
 		product.category = category;
 		product.amount = amount;
+		product.material = material;
 		await product.save();
 
-		res.status(200).send("Producto actualizado correctamente");
+		return res.status(200).send("Producto actualizado correctamente");
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error del servidor");
+		return res.status(500).send("Error del servidor");
 	}
 });
 
@@ -180,7 +187,7 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 			return res.status(404).send("Producto no encontrado");
 		}
 		// Borrar las imágenes
-		const objectsToRemove = product.image.map((imagePath) => ({
+		const objectsToRemove = product.images.map((imagePath) => ({
 			name: imagePath,
 		}));
 
@@ -191,10 +198,10 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 			console.log("Removed the object.");
 		});
 		await Products.findByIdAndDelete(req.params.id);
-		res.status(200).send("Producto eliminado correctamente");
+		return res.status(200).send("Producto eliminado correctamente");
 	} catch (error) {
 		console.log(error);
-		res.status(500).send("Error en el servidor");
+		return res.status(500).send("Error en el servidor");
 	}
 });
 

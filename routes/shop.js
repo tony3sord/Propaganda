@@ -142,7 +142,7 @@ router.post("/addshop", async (req, res) => {
 
 router.patch("/editshop/:id/:adminviejo", async (req, res) => {
 	const { id, adminviejo } = req.params;
-	console.log(id, "name");
+	console.log(id, adminviejo);
 	const {
 		nombre,
 		administrador,
@@ -179,11 +179,12 @@ router.patch("/editshop/:id/:adminviejo", async (req, res) => {
 			province: provincia,
 			direction: direccion,
 		};
-		const shops = await Shop.findOne({
+		const shops = await Shop.find({
 			province: shop.province,
 			name: shop.name,
+			_id: { $ne: id }
 		});
-		if (shops) {
+		if (shops.length>0) {
 			return res.status(400).send("Ya esta tienda existe");
 		} else {
 			const b = await Shop.findOneAndUpdate({ _id: id }, shop);

@@ -7,13 +7,8 @@ import Shop from "../models/shop.js";
 router.get("/category/:shop", async (req, res) => {
 	const { shop } = req.params;
 	try {
-		const category = await Category.findOne({ shop }).populate("shop");
-		const objeto = category.map((c) => ({
-			id:c._id,
-			Categoría: c.name,
-			Tienda:c.shop.name,
-		}));
-		return res.status(200).json(objeto);
+		const category = await Category.find({ shop });
+		return res.status(200).json(category);
 	} catch (error) {
 		console.log(error);
 		return res.status(500).send("Error en el servidor");

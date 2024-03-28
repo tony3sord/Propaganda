@@ -6,13 +6,8 @@ import Shop from "../models/shop.js";
 router.get("/material/:shop", async (req, res) => {
 	const { shop } = req.params;
 	try {
-		const material = await Material.findOne({ shop }).populate("shop");
-		const objeto = material.map((m) => ({
-			id:m._id,
-			Material: m.name,
-			Tienda:m.shop.name
-		}));
-		return res.status(200).json(objeto);
+		const material = await Material.find({ shop });
+		return res.status(200).json(material);
 	} catch (error) {
 		console.log(error);
 		return res.status(500).send("Error en el servidor");

@@ -203,6 +203,7 @@ router.patch("/updateuser/:id", async (req, res) => {
 			};
 		}
 		const b = await User.findByIdAndUpdate(id, a);
+		console.log(b);
 		if (b) {
 			return res.status(200).send("Usuario actualizado correctamente");
 		} else {

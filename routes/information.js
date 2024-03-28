@@ -59,14 +59,15 @@ router.get("/editinformation/:shop", async (req, res) => {
         const information =  await Information.findOne({ shop }); 
             if(information){
                 const obj = {
-                    Servicio:information.service,
-                    Ayuda:information.help,
-                    Nosotros:information.about,
-                    Teléfono:information.phone,
-                    Correo:information.gmail,
-                    Dirección:information.direction,
+                    servicios:information.service,
+                    ayuda:information.help,
+                    sobreNosotros:information.about,
+                    telefono:information.phone,
+                    correo:information.gmail,
+                    direccion:information.direction,
+					tienda:information.shop
                 }
-                console.log(obj);
+				console.log(obj);
                 return res.status(200).json(obj);
             }else{
                 return res.status(400).send("Esta tienda no tiene información");
@@ -80,6 +81,7 @@ router.get("/editinformation/:shop", async (req, res) => {
 
 router.patch("/editinformation/:shop", async (req, res) => {
 	const {shop} = req.params;
+	console.log(shop);
 	const { servicios,ayuda,sobreNosotros,correo,direccion,telefono } = req.body;
 	try {
 		// if (req.isAuthenticated()) {
@@ -90,8 +92,9 @@ router.patch("/editinformation/:shop", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-        const information = await Information.findOneAndUpdate({ shop},{ service:servicios,help:ayuda,about:sobreNosotros,gmail:correo,phone:telefono,direction:direccion });
+        const information = await Information.findOneAndUpdate({shop},{ service:servicios,help:ayuda,about:sobreNosotros,gmail:correo,phone:telefono,direction:direccion });
 		if (information) {
+			console.log(information);
 			return res.status(200).send("Información editada correctamente");
 		} else {
 			return res.status(400).send("No se pudo editar la Información");
