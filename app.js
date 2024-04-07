@@ -18,6 +18,7 @@ import helpRoutes from "./routes/help.js";
 import promotionRoutes from "./routes/promotion.js";
 import materialRoutes from "./routes/material.js";
 import informationRoutes from "./routes/information.js";
+import minioClient from "./file.js";
 
 import passport from "passport";
 import dotenv from "dotenv";
@@ -82,5 +83,6 @@ app.listen(PORT, () => {
 app.get("/", (req, res) => {
 	res.send("Welcome to the API of the store");
 });
+
 
 export default app;

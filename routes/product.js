@@ -5,6 +5,9 @@ import express from "express";
 const router = express.Router();
 import Products from "../models/products.js";
 import Opinion from "../models/opnion.js";
+import addPhotoMinio from "../minio/addPhoto.js";
+import createFolderInBucket from "../minio/createFolder.js";
+import category from "../models/category.js";
 
 
 router.post(
@@ -13,9 +16,7 @@ router.post(
 	async (req, res) => {
 		const {shop} = req.params;
 		const { nombre, precio, descripcion, categoria, cantidad, material } = req.body;
-		console.log(nombre, precio, descripcion, categoria, cantidad,material);
 		const fotos = req.files;
-		console.log(fotos);
 		try {
 			// if (req.isAuthenticated()) {
 			// 	if (req.user.role == "Admin") {
@@ -25,30 +26,8 @@ router.post(
 			// } else {
 			// 	res.status(403).send("Debe loguearse para ver esta página");
 			// }
-			const imageUploadPromises = fotos.map((image) => {
-				const imagePath = image.originalname;
-				const imageBuffer = image.buffer;
-				const imageType = image.mimetype;
-
-				return new Promise((resolve, reject) => {
-					minioClient.putObject(
-						"propaganda",
-						imagePath,
-						imageBuffer,
-						imageType,
-						function (err, etag) {
-							if (err) {
-								reject(err);
-							} else {
-								const imageUrl = `http://127.0.0.1:9000/buckets/propaganda/${imagePath}`;
-								resolve(imageUrl);
-							}
-						},
-					);
-				});
-			});
-
-			const imagePaths = await Promise.all(imageUploadPromises);
+			createFolderInBucket("propaganda",shop);
+			const imagePaths = await Promise.all(addPhotoMinio(fotos,shop, nombre));
 			const newProduct = new Products({
 				shop,
 				name:nombre,
@@ -59,24 +38,28 @@ router.post(
 				material:material,
 				images: [...imagePaths],
 			});
+			if(await Products.findOne({name:newProduct.name,shop:newProduct.shop})){
+				return res.status(400).send("Ya existe un producto con el nombre ingresado");
+			}else{
 			const a = await newProduct.save();
 			if(a){
 				return res.status(200).send("Producto añadido correctamente");
 			}else{
 				return res.status(400).send("Error al añadir el producto");
-			}
+			}}
 		} catch (error) {
 			console.log(error);
 			return res.status(500).send("Error en el servidor");
 		}
 	},
 );
+
+
 //show the view edit a product
-router.get("/editproduct/:id", async (req, res) => {
+router.get("/product/:id", async (req, res) => {
 	const id = req.params.id;
 	// if(req.isAuthenticated()){
 	//     if(req.user.role=="admin"){
-	//         //Here the product is edited
 	//         Products.findById(id, (err, doc) => {
 	//             if(err){
 	//                 console.log(err);
@@ -90,19 +73,38 @@ router.get("/editproduct/:id", async (req, res) => {
 	// }else{
 	//     res.redirect('/login');
 	// }
-	const product = await Products.findById(id); 
+	const product = await Products.findById(id).populate({
+		path: 'category',
+		select: 'name',
+	}).populate({
+		path:"material",
+		select:'name',
+	}).populate({
+		path:'shop',
+		select:'name'
+	}); 
 		if (product) {
-			console.log(product);
-			return res.status(200).send("Producto obtenido correctamente");
+			const obj = {
+				id:product._id,
+				nombre:product.name,
+				precio:product.price,
+				cantidad:product.amount,
+				descripcion:product.description,
+				categoria:product.category,
+				material:product.material,
+				tienda:product.shop
+			}
+			return res.status(200).json(obj);
 		} else {
 			return res.status(400).send("Error al obtener el producto");
 		}
 });
 
+
 //edit a product
 router.patch("/editproduct/:id", upload.array("fotos", 3), async (req, res) => {
-	const { name, price, description, category, amount,material } = req.body;
-	const fotos = req.files;
+	const { nombre, precio, descripcion, categoria, cantidad, material } = req.body;
+		const fotos = req.files;
 
 	try {
 		// if (req.isAuthenticated()) {
@@ -119,7 +121,7 @@ router.patch("/editproduct/:id", upload.array("fotos", 3), async (req, res) => {
 		}
 
 		// Borrar las imágenes antiguas
-		const objectsToRemove = product.fotos.map((imagePath) => ({
+		const objectsToRemove = product.images.map((imagePath) => ({
 			name: imagePath,
 		}));
 
@@ -131,36 +133,17 @@ router.patch("/editproduct/:id", upload.array("fotos", 3), async (req, res) => {
 		});
 
 		// Subir las nuevas imágenes
-		const imagePaths = [];
-		for (let image of fotos) {
-			const imagePath = image.path;
-			const imageStream = fs.createReadStream(imagePath);
-			const imageType = image.mimetype;
-
-			minioClient.putObject(
-				"my-bucket",
-				imagePath,
-				imageStream,
-				imageType,
-				function (err, etag) {
-					if (err) {
-						return console.log(err);
-					}
-					console.log("File uploaded successfully.");
-				},
-			);
-
-			imagePaths.push(imagePath);
-		}
+		const imagePaths = await Promise.all(addPhotoMinio(fotos,shop, nombre));
 
 		// Actualizar el producto
-		product.name = name;
-		product.price = price;
-		product.description = description;
+		product.name = nombre;
+		product.price = precio;
+		product.description = descripcion;
 		product.images = imagePaths;
-		product.category = category;
-		product.amount = amount;
+		product.category = categoria;
+		product.amount = cantidad;
 		product.material = material;
+		product.images = [...imagePaths];
 		await product.save();
 
 		return res.status(200).send("Producto actualizado correctamente");
@@ -169,6 +152,7 @@ router.patch("/editproduct/:id", upload.array("fotos", 3), async (req, res) => {
 		return res.status(500).send("Error del servidor");
 	}
 });
+
 
 //delete a product
 router.delete("/deleteproduct/:id", async (req, res) => {
@@ -187,10 +171,13 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 			return res.status(404).send("Producto no encontrado");
 		}
 		// Borrar las imágenes
-		const objectsToRemove = product.images.map((imagePath) => ({
-			name: imagePath,
-		}));
-
+		// Borrar las imágenes
+		const objectsToRemove = product.images.map((imagePath) => {
+			const url = new URL(imagePath);
+			const objectName = url.pathname.replace('/buckets/propaganda/', '');
+			return { name: objectName };
+		});
+		
 		minioClient.removeObjects("propaganda", objectsToRemove, function (err) {
 			if (err) {
 				return console.log("Unable to remove object: ", err);
@@ -205,16 +192,34 @@ router.delete("/deleteproduct/:id", async (req, res) => {
 	}
 });
 
+
 //get all products
 router.get("/products/:shop", async (req, res) => {
 	const shop = req.params.shop;
-	const products = await Products.find({ shop });
+	const products = await Products.find({ shop }).populate({
+		path: 'category',
+		select: 'name -_id',
+	}).populate({
+		path:"material",
+		select:'name -_id',
+	})
+	const productos = products.map((product) => ({
+		id: product._id,
+		Nombre: product.name,
+		Precio: product.price,
+		Descripción: product.descripcion,
+		Categoría:product.category.name,
+		Material:product.material.name,
+		Disponibilidad:product.amount,
+		Vendidos:product.sales??0,
+	}));
 	if (products) {
-		res.status(200).json({ products });
+		res.status(200).json(productos);
 	} else {
 		res.status(404).send("No se encontraron productos");
 	}
 });
+
 
 //assesment a product
 router.post("/assesmentproduct/:id", async (req, res) => {
@@ -263,7 +268,7 @@ router.post("/opineproduct/:id", async (req, res) => {
 });
 
 //edit opine a product
-router.post("/editopineproduct/:id", async (req, res) => {
+router.patch("/editopineproduct/:id", async (req, res) => {
 	const id = req.params.id;
 	const opinionText = req.body.opinion;
 	const user = req.user;

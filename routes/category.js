@@ -8,7 +8,11 @@ router.get("/category/:shop", async (req, res) => {
 	const { shop } = req.params;
 	try {
 		const category = await Category.find({ shop });
-		return res.status(200).json(category);
+		const categorys = category.map((c)=>({
+			id:c._id,
+			Nombre:c.name
+		}))
+		return res.status(200).json(categorys);
 	} catch (error) {
 		console.log(error);
 		return res.status(500).send("Error en el servidor");
@@ -35,8 +39,8 @@ router.delete("/removecategory/:shop/:id", async (req, res) => {
 	}
 });
 
-router.get("/editcategory/:shop/:id", async (req, res) => {
-	const { id, shop } = req.params;
+router.get("/category/:id", async (req, res) => {
+	const { id } = req.params;
 	try {
 		// if (req.isAuthenticated()) {
 		// 	if (req.user.role == "Admin") {
@@ -46,7 +50,7 @@ router.get("/editcategory/:shop/:id", async (req, res) => {
 		// } else {
 		// 	res.status(403).send("Debe loguearse para ver esta página");
 		// }
-		const category = await Category.findOne({ _id: id, shop });
+		const category = await Category.findOne({ _id: id });
 		if (category) {
 			return res.status(200).json(category);
 		} else {
@@ -111,9 +115,9 @@ router.post("/addcategory/:shop", async (req, res) => {
 			for(let i = 0; i < shops.length; i++) {
 				const shop = shops[i];
 				await Category.findOneAndUpdate(
-					{ shop: shop._id, name: categoria }, // criterios de búsqueda
-					{ shop: shop._id, name: categoria }, // datos a insertar
-					{ upsert: true, new: true } // opciones
+					{ shop: shop._id, name: categoria }, 
+					{ shop: shop._id, name: categoria }, 
+					{ upsert: true, new: true }
 				);
 			}
 			return res.status(200).send("Categoría añadida correctamente a todas las tiendas");

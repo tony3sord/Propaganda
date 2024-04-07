@@ -7,17 +7,21 @@ router.get("/material/:shop", async (req, res) => {
 	const { shop } = req.params;
 	try {
 		const material = await Material.find({ shop });
-		return res.status(200).json(material);
+		const materials = material.map((c)=>({
+			id:c._id,
+			Nombre:c.name
+		}))
+		return res.status(200).json(materials);
 	} catch (error) {
 		console.log(error);
 		return res.status(500).send("Error en el servidor");
 	}
 });
 
-router.get("/material/:shop/:id", async (req, res) => {
+router.get("/material/:id", async (req, res) => {
 	const { shop, id } = req.params;
 	try {
-		const material = await Material.findOne({ shop, _id: id });
+		const material = await Material.findOne({_id: id });
 		return res.status(200).json(material);
 	} catch (error) {
 		console.log(error);
