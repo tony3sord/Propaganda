@@ -18,31 +18,29 @@ import helpRoutes from "./routes/help.js";
 import promotionRoutes from "./routes/promotion.js";
 import materialRoutes from "./routes/material.js";
 import informationRoutes from "./routes/information.js";
-import minioClient from "./file.js";
 
 import passport from "passport";
 import dotenv from "dotenv";
 dotenv.config();
-
-app.use(express.json());
-
 //For server https
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
 const bd_connetion = process.env.BD_CONNETION;
 const HOST_MONGO = process.env.HOST_MONGO;
 
+app.use(express.json());
+
 app.use(
-	session({
-		secret: secret_https,
-		resave: false,
-		saveUninitialized: false,
-		cookie: {
-			maxAge: 24 * 60 * 60 * 1000,
-			httpOnly: true,
-			secure: false,
-		},
-	}),
+  session({
+    secret: secret_https,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: false,
+    },
+  }),
 );
 
 app.use(passport.initialize());
@@ -61,28 +59,26 @@ app.use("/help", helpRoutes);
 app.use("/promotion", promotionRoutes);
 app.use("/material", materialRoutes);
 
-
 main().catch((err) => console.log(err));
 async function main() {
-	try {
-		const a = await mongoose.connect(`mongodb://${HOST_MONGO}/${bd_connetion}`);
-		if(a){
-			console.log("MongoDB is Online,now");
-		}else{
-			console.log("MongoDB is Offline,now");
-		}
-	} catch (error) {
-		console.error("Error to the connect with MongoDB:", error);
-	}
+  try {
+    const a = await mongoose.connect(`mongodb://${HOST_MONGO}/${bd_connetion}`);
+    if (a) {
+      console.log("MongoDB is Online,now");
+    } else {
+      console.log("MongoDB is Offline,now");
+    }
+  } catch (error) {
+    console.error("Error to the connect with MongoDB:", error);
+  }
 }
 
 app.listen(PORT, () => {
-	console.log(`Server Active, port: ${PORT}`);
+  console.log(`Server Active, port: ${PORT}`);
 });
 
 app.get("/", (req, res) => {
-	res.send("Welcome to the API of the store");
+  res.send("Welcome to the API of the store");
 });
-
 
 export default app;
