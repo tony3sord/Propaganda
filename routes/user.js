@@ -138,8 +138,9 @@ router.patch("/updateuser/:id", async (req, res) => {
       return res.status(404).send("Usuario no encontrado");
     }
     const valida = await validate(correo, usuario);
-    if (valida && valida._id !== id)
-      return res.status(409).send("email o usuario ya registrado");
+    if (valida && valida._id.toString() !== id)
+      return res.status(409).send("Correo o usuario ya registrado");
+
     user.name = nombre;
     user.email = correo;
     user.user = usuario;

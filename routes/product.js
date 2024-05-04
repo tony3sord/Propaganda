@@ -163,7 +163,6 @@ router.delete("/deleteproduct/:id", async (req, res) => {
       return res.status(404).send("Producto no encontrado");
     }
     const objectsToRemove = product.images.map((imagePath) => {
-      console.log(imagePath);
       return imagePath;
     });
     removePhoto(objectsToRemove);
