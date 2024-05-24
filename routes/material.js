@@ -18,11 +18,16 @@ router.get("/material/:shop", async (req, res) => {
   }
 });
 
-router.get("/material/:id", async (req, res) => {
-  const { shop, id } = req.params;
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const material = await Material.findOne({ _id: id });
-    return res.status(200).json(material);
+    const material = await Material.findById(id);
+    const object = {
+      nombre: material.name,
+      tienda: material.shop,
+      id_material: material._id,
+    };
+    return res.status(200).json(object);
   } catch (error) {
     console.log(error);
     return res.status(500).send("Error en el servidor");
@@ -73,9 +78,9 @@ router.post("/addmaterial/:shop", async (req, res) => {
   }
 });
 
-router.patch("/editmaterial/:shop/:id", async (req, res) => {
-  const { shop, id } = req.params.shop;
-  const { material } = req.body;
+router.patch("/editmaterial/:id", async (req, res) => {
+  const { id } = req.params;
+  const { material, tienda } = req.body;
   try {
     // if (req.isAuthenticated()) {
     // 	if (req.user.role == "Admin") {
@@ -85,11 +90,11 @@ router.patch("/editmaterial/:shop/:id", async (req, res) => {
     // } else {
     // 	res.status(403).send("Debe loguearse para ver esta página");
     // }
-    const a = await Material.findOne({ shop, name: material });
+    const a = await Material.findOne({ shop: tienda, name: material });
     if (a) {
       res.status(400).send("Este material ya existe");
     } else {
-      await Material.findOneAndUpdate({ shop, _id: id }, { material });
+      await Material.findByIdAndUpdate(id, { name: material });
       return res.status(200).send("Material editado correctamente");
     }
   } catch (error) {

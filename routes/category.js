@@ -31,7 +31,7 @@ router.delete("/removecategory/:id", async (req, res) => {
     // } else {
     // 	res.status(403).send("Debe loguearse para ver esta página");
     // }
-    await Category.findOneAndDelete({_id: id});
+    await Category.findOneAndDelete({ _id: id });
     return res.status(200).send("Categoría eliminada correctamente");
   } catch (error) {
     console.log(error);
@@ -39,7 +39,7 @@ router.delete("/removecategory/:id", async (req, res) => {
   }
 });
 
-router.get("/category/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     // if (req.isAuthenticated()) {
@@ -50,9 +50,15 @@ router.get("/category/:id", async (req, res) => {
     // } else {
     // 	res.status(403).send("Debe loguearse para ver esta página");
     // }
-    const category = await Category.findOne({ _id: id });
+    const category = await Category.findById(id);
+    console.log(category);
+    const object = {
+      nombre: category.name,
+      tienda: category.shop,
+      id_category: category._id,
+    };
     if (category) {
-      return res.status(200).json(category);
+      return res.status(200).json(object);
     } else {
       return res.status(404).send("Error al buscar la categoria");
     }
@@ -63,9 +69,10 @@ router.get("/category/:id", async (req, res) => {
 });
 
 //edit category
-router.patch("/editcategory/:shop/:id", async (req, res) => {
-  const { categoria } = req.body;
-  const { shop, id } = req.params;
+router.patch("/editcategory/:id", async (req, res) => {
+  const { categoria, tienda } = req.body;
+  const { id } = req.params;
+  console.log(categoria, tienda);
   try {
     // if (req.isAuthenticated()) {
     // 	if (req.user.role == "Admin") {
@@ -75,18 +82,17 @@ router.patch("/editcategory/:shop/:id", async (req, res) => {
     // } else {
     // 	res.status(403).send("Debe loguearse para ver esta página");
     // }
-    const b = await Category.findOne({ shop, name: categoria });
+    console.log(tienda);
+    const b = await Category.findOne({ shop: tienda, name: categoria });
     if (b) {
       return res.status(400).send("Esta categoría ya existe");
     }
-    const a = await Category.findOneAndUpdate(id, shop, {
+    const a = await Category.findByIdAndUpdate(id, {
       name: categoria,
     });
-    if (a) {
-      return res.status(200).send("Categoría editada correctamente");
-    } else {
-      return res.status(403).send("Error al editar la categoría");
-    }
+    console.log(a);
+    if (!a) return res.status(400).send("Error al editar la categoría");
+    return res.status(200).send("Categoría editada correctamente");
   } catch (error) {
     console.log(error);
     return res.status(500).send("Error en el servidor");

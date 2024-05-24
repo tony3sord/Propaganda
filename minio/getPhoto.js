@@ -1,21 +1,38 @@
 import minioClient from "../file.js";
+import os from "os";
+
+const destination = "";
 
 function getPhoto(bucket, file) {
   return new Promise((resolve, reject) => {
-    minioClient.getObject(bucket, file, function (err, dataStream) {
+    minioClient.presignedGetObject(bucket, file, (err, presignedUrl) => {
       if (err) {
         return reject(err);
       }
-      let data = [];
-      dataStream.on("data", function (chunk) {
-        data.push(chunk);
-      });
-      dataStream.on("end", function () {
-        let blob = new Blob(data);
-        let url = URL.createObjectURL(blob);
-        resolve(url);
-      });
+      const urlWithIp = presignedUrl.replace(
+        "http://localhost:9000/",
+        "https://0m9fgs4l-9000.usw3.devtunnels.ms/",
+      );
+      resolve(urlWithIp);
     });
   });
 }
+
+function getServerIp() {
+  const networkInterfaces = os.networkInterfaces();
+
+  for (const name of Object.keys(networkInterfaces)) {
+    for (const net of networkInterfaces[name]) {
+      if (net.internal !== false) {
+        continue;
+      }
+      if (net.family === "IPv4") {
+        return net.address;
+      }
+    }
+  }
+
+  return "localhost";
+}
+
 export default getPhoto;

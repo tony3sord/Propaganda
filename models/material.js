@@ -9,9 +9,7 @@ const MaterialSchema = new mongoose.Schema({
 MaterialSchema.pre("findOneAndDelete", async function (next) {
   try {
     const material = await this.model.findOne(this.getQuery());
-    console.log(material);
-    const a = await Product.deleteMany({ shop: material.shop });
-    console.log(a);
+    await Product.deleteMany({ shop: material.shop });
     next();
   } catch (error) {
     console.log(error);

@@ -3,8 +3,27 @@ import mongoose from "mongoose";
 const app = express();
 import session from "express-session";
 import cors from "cors";
+import dotenv from "dotenv";
+import expressstatusmonitor from "express-status-monitor";
+dotenv.config();
 
-app.use(cors());
+app.use(
+  cors({
+    // origin: process.env.URL_FRONTEND,
+    credentials: true,
+  }),
+);
+
+// Coloca todas tus rutas aquí...
+
+// Middleware para manejar rutas no encontradas
+// app.use((req, res, next) => {
+//   console.log(
+//     `Direccion Ip: ${req.ip}, Solicitud: ${req.method}, URL Solicitada: ${req.url}`,
+//   );
+//   next();
+// });
+
 //Import Routes
 import userRoutes from "./routes/user.js";
 import productRoutes from "./routes/product.js";
@@ -18,10 +37,10 @@ import helpRoutes from "./routes/help.js";
 import promotionRoutes from "./routes/promotion.js";
 import materialRoutes from "./routes/material.js";
 import informationRoutes from "./routes/information.js";
+import clientRotues from "./routes/client.js";
 
 import passport from "passport";
-import dotenv from "dotenv";
-dotenv.config();
+
 //For server https
 const secret_https = process.env.SECRET_KEY_HTTPS;
 const PORT = parseInt(process.env.PORT);
@@ -37,7 +56,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true,
+      httpOnly: false,
       secure: false,
     },
   }),
@@ -58,6 +77,7 @@ app.use("/about", aboutRoutes);
 app.use("/help", helpRoutes);
 app.use("/promotion", promotionRoutes);
 app.use("/material", materialRoutes);
+app.use("/client", clientRotues);
 
 main().catch((err) => console.log(err));
 async function main() {
@@ -80,5 +100,7 @@ app.listen(PORT, () => {
 app.get("/", (req, res) => {
   res.send("Welcome to the API of the store");
 });
+
+app.use(expressstatusmonitor());
 
 export default app;

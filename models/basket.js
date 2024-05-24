@@ -1,18 +1,21 @@
 import mongoose from "mongoose";
-import product from "./products.js";
+import Product from "./products.js";
 import user from "./users.js";
 
 const BasketSchema = new mongoose.Schema({
-	product: [
-		{
-			type: mongoose.Schema.Types.Mixed,
-			ref: product,
-		},
-	],
-	user: {
-		type: mongoose.Schema.Types.Mixed,
-		ref: user,
-	},
+  products: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Product,
+      },
+      quantity: Number,
+    },
+  ],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 export default mongoose.model("Basket", BasketSchema);

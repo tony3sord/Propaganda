@@ -12,19 +12,21 @@ configurePassport(User);
 
 //register user
 router.post("/register", async (req, res) => {
-  const { nombre, correo, contrasena, usuario } = req.body;
+  const { nombre, correo, clave, usuario, confirmarClave } = req.body;
   try {
+    if (clave !== confirmarClave)
+      return res.status(400).send("No coninciden las claves");
     if (await validate(correo, usuario))
       return res.status(409).send("email o usuario ya registrado");
     const newUser = new User({
       name: nombre,
       email: correo,
       user: usuario,
-      password: contrasena,
+      password: clave,
       role: "Cliente",
     });
     await newUser.save();
-    return res.status(200).json(newUser);
+    return res.status(200).send("Usuario creado correctamente");
   } catch (error) {
     console.log(error);
     return res.status(500).send(error);
@@ -48,17 +50,24 @@ router.get("/currentuser", (req, res) => {
 });
 
 //register user
+//register user
 router.post("/login", function (req, res, next) {
-  passport.authenticate("local", (err, user, info) => {
+  passport.authenticate("local", async (err, user, info) => {
     if (err) {
       return next(err);
     }
     if (!user) {
-      return res.status(401).json(info);
+      return res.status(401).send("Usuario o Contraseña incorrectos");
     }
-    req.logIn(user, function (err) {
+    req.logIn(user, async function (err) {
       if (err) {
         return next(err);
+      }
+      if (!err) {
+        if (user.role == "Admin") {
+          const tienda = await Shop.findOne({ admin: user._id });
+          user = { ...user.toObject(), tienda: tienda._id };
+        }
       }
       return res.status(200).json(user);
     });
@@ -79,6 +88,9 @@ router.delete("/deleteuser/:id", async (req, res) => {
   try {
     const user = await User.findById(id);
     if (user) {
+      if (user.role == "Superadmin") {
+        return res.status(400).send("No se puede borrar este usuario");
+      }
       const deleteUser = await User.deleteOne({ user });
       if (deleteUser) {
         return res.status(200).send("Usuario eliminado correctamente");

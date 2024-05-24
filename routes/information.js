@@ -6,16 +6,20 @@ router.get("/information/:shop", async (req, res) => {
   const shop = req.params.shop;
   try {
     const information = await Information.findOne({ shop });
-    const obj = {
-      id: information._id,
-      servicios: information.service,
-      ayuda: information.help,
-      sobreNosotros: information.about,
-      telefono: information.phone,
-      correo: information.gmail,
-      direccion: information.direction,
-    };
-    return res.status(200).json(obj);
+    if (information) {
+      const obj = {
+        id: information._id,
+        servicios: information.service,
+        ayuda: information.help,
+        sobreNosotros: information.about,
+        telefono: information.phone,
+        correo: information.gmail,
+        direccion: information.direction,
+      };
+      return res.status(200).json(obj);
+    } else {
+      return res.status(404).send("No hay informaciones de esta tienda");
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).send("Server error");
@@ -35,6 +39,12 @@ router.post("/addinformation/:shop", async (req, res) => {
     // } else {
     // 	res.status(403).send("Debe loguearse para ver esta página");
     // }
+    const validar = await Information.findOne({ shop });
+    if (validar) {
+      return res
+        .status(400)
+        .send("Ya esta tiend tiene información, por favor, edítela");
+    }
     const information = await Information.create({
       shop,
       service: servicios,

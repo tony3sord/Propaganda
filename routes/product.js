@@ -53,6 +53,45 @@ router.post("/addproduct/:shop", upload.array("fotos", 3), async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  console.log("Hola");
+  const id = req.params.id;
+  const product = await Products.findById(id)
+    .populate({
+      path: "category",
+      select: "name",
+    })
+    .populate({
+      path: "material",
+      select: "name",
+    })
+    .populate({
+      path: "shop",
+      select: "name",
+    });
+  if (product) {
+    let a = [];
+    for (const element of product.images) {
+      a.push(getPhoto("propaganda", element));
+    }
+    const obj = {
+      id: product._id,
+      nombre: product.name,
+      precio: product.price,
+      cantidad: product.amount,
+      descripcion: product.description,
+      categoria: product.category.name,
+      material: product.material.name,
+      tienda: product.shop,
+      fotos: await Promise.all(a),
+    };
+    console.log(obj);
+    return res.status(200).json(obj);
+  } else {
+    return res.status(400).send("Error al obtener el producto");
+  }
+});
+
 //show the view edit a product
 router.get("/product/:id", async (req, res) => {
   const id = req.params.id;
@@ -72,7 +111,7 @@ router.get("/product/:id", async (req, res) => {
   if (product) {
     let a = [];
     for (const element of product.images) {
-      a.push(getPhoto("propaganda", element));
+      a.push(getPhoto("propaganda", element[0]));
     }
     const obj = {
       id: product._id,
@@ -319,7 +358,7 @@ router.get("/recents/:shop", async (req, res) => {
     const recentProducts = await Products.find(shop)
       .sort({ createdAt: -1 })
       .limit(5);
-    res.status(200).json({ recentProducts });
+    res.status(200).json(recentProducts);
   } catch (error) {
     console.log(error);
     res.status(500).send("Error del servidor");
@@ -341,11 +380,21 @@ router.get("/updateproducts/:shop", async (req, res) => {
 });
 
 //Filter for category
-router.get("/product/:shop/:category", async (req, res) => {
+router.get("/productos/:shop/:category", async (req, res) => {
   const { shop, category } = req.params;
   try {
     const products = await Products.find({ shop, category });
     if (products) {
+      const productos = products.map((product) => ({
+        id: product._id,
+        Nombre: product.name,
+        Precio: product.price,
+        Descripción: product.descripcion,
+        Categoría: product.category.name,
+        Material: product.material.name,
+        Disponibilidad: product.amount,
+        Vendidos: product.sales ?? 0,
+      }));
       res.status(200).json(products);
     } else {
       res.status(404).send("No hay productos de esta categoría");
@@ -357,7 +406,7 @@ router.get("/product/:shop/:category", async (req, res) => {
 });
 
 //Filter for material
-router.get("/product/:shop/:material", async (req, res) => {
+router.get("/productos/:shop/:material", async (req, res) => {
   const { shop, material } = req.params;
   try {
     const products = await Products.find({ shop, material });

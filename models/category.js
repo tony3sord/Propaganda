@@ -9,9 +9,7 @@ const CategorySchema = new mongoose.Schema({
 CategorySchema.pre("findOneAndDelete", async function (next) {
   try {
     const category = await this.model.findOne(this.getQuery());
-    console.log(category);
-    const a = await Product.deleteMany({ shop: category.shop });
-    console.log(a);
+    await Product.deleteMany({ shop: category.shop });
     next();
   } catch (error) {
     console.log(error);

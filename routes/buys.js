@@ -67,4 +67,5 @@ router.get("/bestsellers", async (req, res) => {
 	res.json({ bestsellers });
 });
 
+
 export default router;
