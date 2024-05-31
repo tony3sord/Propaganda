@@ -25,8 +25,10 @@ router.post("/register", async (req, res) => {
       password: clave,
       role: "Cliente",
     });
-    await newUser.save();
-    return res.status(200).send("Usuario creado correctamente");
+    const usuario1 = await newUser.save();
+    return res
+      .status(200)
+      .json({ message: "Usuario creado correctamente", data: usuario1 });
   } catch (error) {
     console.log(error);
     return res.status(500).send(error);
@@ -119,7 +121,6 @@ router.get("/user/:id", async (req, res) => {
           nombre: a.name,
           correo: a.email,
           usuario: a.user,
-          contrasena: a.password,
           tienda: shop.name,
         };
       } else {
@@ -128,7 +129,6 @@ router.get("/user/:id", async (req, res) => {
           nombre: a.name,
           correo: a.email,
           usuario: a.user,
-          contrasena: a.password,
         };
       }
       return res.json(b);
@@ -144,6 +144,7 @@ router.get("/user/:id", async (req, res) => {
 router.patch("/updateuser/:id", async (req, res) => {
   const id = req.params.id;
   const { nombre, correo, contrasena, usuario, tienda } = req.body;
+  console.log(req.body);
   try {
     const user = await User.findById(id);
     if (!user) {
@@ -152,10 +153,9 @@ router.patch("/updateuser/:id", async (req, res) => {
     const valida = await validate(correo, usuario);
     if (valida && valida._id.toString() !== id)
       return res.status(409).send("Correo o usuario ya registrado");
-
-    user.name = nombre;
-    user.email = correo;
-    user.user = usuario;
+    if (nombre) user.name = nombre;
+    if (correo) user.email = correo;
+    if (usuario) user.user = usuario;
     if (contrasena) {
       user.password = contrasena;
     }

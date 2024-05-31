@@ -243,21 +243,22 @@ router.get("/products/:shop", async (req, res) => {
 });
 
 //assesment a product
-router.post("/assesmentproduct/:id", async (req, res) => {
+router.post("/assesmentproduct/:id/:user", async (req, res) => {
   const id = req.params.id;
-  const assessment = req.body.assessment;
+  const assessment = req.body.estrellasSeleccionadas;
+  const user = req.params.user;
   try {
-    if (req.isAuthenticated()) {
+    if (user) {
       const product = await Products.findById(id);
-      let opinion = await Opinion.findOne({ product: product, user: req.user });
+      let opinion = await Opinion.findOne({ product: product, user });
       if (!opinion) {
         opinion = new Opinion({ product, user: req.user });
       }
       opinion.assessments = assessment;
       await opinion.save();
-      res.status(200).send("Opinión guardada correctamente");
+      return res.status(200).send("Valoración guardada correctamente");
     } else {
-      res.status(403).send("Debe autenticarse");
+      return res.res.status(403).send("Debe autenticarse");
     }
   } catch (error) {
     console.log(error);
@@ -265,22 +266,50 @@ router.post("/assesmentproduct/:id", async (req, res) => {
   }
 });
 
-//opine a product
-router.post("/opineproduct/:id", async (req, res) => {
-  const id = req.params.id;
-  const opinionText = req.body.opinion;
+router.get("/valoraciones/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    if (req.isAuthenticated()) {
+    const opiniones = await Opinion.find({ product: id });
+    if (opiniones) {
+      const valoraciones = opiniones.map((opinion) => ({
+        valoracion: opinion.assessments,
+      }));
+      let promedio = 0;
+      console.log(valoraciones);
+      let cont = 0;
+      for (const valoracion of valoraciones) {
+        if (valoracion.valoracion != undefined) {
+          promedio += valoracion.valoracion;
+          cont++;
+        }
+      }
+      promedio = promedio / cont;
+      console.log(promedio, "promedio");
+      return res.status(200).json(promedio);
+    } else {
+      return res.status(404).send("No hay valoraciones");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//opine a product
+router.post("/opineproduct/:id/:user", async (req, res) => {
+  const { id, user } = req.params;
+  const opinionText = req.body.textArea;
+  try {
+    if (user) {
       const product = await Products.findById(id);
-      let opinion = await Opinion.findOne({ product: product, user: req.user });
+      let opinion = await Opinion.findOne({ product: product, user });
       if (!opinion) {
-        opinion = new Opinion({ product, user: req.user });
+        opinion = new Opinion({ product, user });
       }
       opinion.opinions = opinionText;
       await opinion.save();
-      res.status(200).send("Opinión guardada correctamente");
+      return res.status(200).send("Opinión guardada correctamente");
     } else {
-      res.status(403).send("Debe autenticarse");
+      return res.status(403).send("Debe autenticarse");
     }
   } catch (error) {
     console.log(error);
@@ -289,26 +318,18 @@ router.post("/opineproduct/:id", async (req, res) => {
 });
 
 //edit opine a product
-router.patch("/editopineproduct/:id", async (req, res) => {
+router.patch("/editopineproduct/:id/:user", async (req, res) => {
   const id = req.params.id;
-  const opinionText = req.body.opinion;
-  const user = req.user;
+  const opinionText = req.body.textArea;
+  const user = req.params.user;
   try {
-    if (req.isAuthenticated()) {
-      await Opinion.findOneAndUpdate(
-        { product: id, user: user._id },
-        {
-          $set: { opinions: opinionText },
-        },
-      );
-      res.status(200).send("Opinión eliminada correctamente");
-    } else {
-      res
-        .status(404)
-        .send(
-          "No es el usuario que ha escrito la opinión o no existe la opinión",
-        );
-    }
+    await Opinion.findOneAndUpdate(
+      { product: id, user },
+      {
+        $set: { opinions: opinionText },
+      },
+    );
+    res.status(200).send("Opinión eliminada correctamente");
   } catch (error) {
     console.log(error);
     res.status(500).send("Error del servidor");
@@ -433,6 +454,71 @@ router.get("/product/:shop/:category/:material", async (req, res) => {
         .status(404)
         .send("No hay productos de esta categoría y de este material");
     }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error en el servidor");
+  }
+});
+
+router.get("/opiniones/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  try {
+    if (id) {
+      const opiniones = await Opinion.find({ product: id }).populate("user");
+      if (opiniones) {
+        const opinionesArray = opiniones.map((opinion) => ({
+          opinion: opinion.opinions,
+          usuario: opinion.user.user,
+          id: opinion._id,
+        }));
+        return res.json(opinionesArray);
+      } else {
+        return res.status(404).send("No hay opiniones");
+      }
+    } else {
+      res.status(404).send("No hay opiniones");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/busqueda/:buscador/:shop", async (req, res) => {
+  const { buscador, shop } = req.params;
+  const buscar = new RegExp(buscador, "i");
+  try {
+    const products = await Products.find({
+      $or: [{ name: buscar }, { description: buscar }],
+      $and: [{ shop }],
+    })
+      .populate({
+        path: "category",
+        select: "name -_id",
+      })
+      .populate({
+        path: "material",
+        select: "name -_id",
+      });
+    Promise.all(
+      products.map(async (product) => ({
+        fotos: await getPhoto("propaganda", product.images[0]),
+        id: product._id,
+        nombre: product.name,
+        precio: product.price,
+        descripcion: product.description,
+        categoria: product.category.name,
+        material: product.material.name,
+        disponibilidad: product.amount,
+        vendidos: product.sales ?? 0,
+      })),
+    ).then((productos) => {
+      if (productos.length > 0) {
+        return res.status(200).json(productos);
+      } else {
+        return res.status(404).send("No se encontraron productos");
+      }
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send("Error en el servidor");
